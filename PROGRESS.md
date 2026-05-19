@@ -1479,3 +1479,16 @@ Keputusan:
 Verifikasi:
 - `git remote -v` berhasil menampilkan URL remote baru.
 - `git ls-remote --heads origin main` berhasil dan menemukan branch `main` pada commit `c45fbfce5e48ee69eed1e80e8f5fa2dcb173e3d0`.
+
+## 2026-05-19 - README Project Flow
+Perubahan:
+- Mengganti `README.md` bawaan Laravel menjadi README khusus Dafydio Photobooth Cloud.
+- Menambahkan alur cloud/station/customer/admin sesuai catatan arsitektur dan progress.
+- Menambahkan stack, credential demo, setup lokal, port cloud `8001`, verifikasi, deployment shared hosting, optimasi data, dan link dokumentasi project.
+
+Keputusan:
+- README dibuat sebagai pintu masuk praktis untuk developer/operator, sedangkan detail teknis tetap diarahkan ke `ARCHITECTURE.md`, `DATA_MODEL.md`, `API_CONTRACT.md`, `HOSTINGER_DEPLOYMENT.md`, dan `PROGRESS.md`.
+- Bagian deploy menekankan MySQL, database queue/cache, storage public awal, dan struktur siap S3/R2.
+
+Verifikasi:
+- Perubahan dokumentasi saja; tidak menjalankan test aplikasi.
