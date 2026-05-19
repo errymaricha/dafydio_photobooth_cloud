@@ -1454,3 +1454,16 @@ Verifikasi:
 - `php artisan test` berhasil, 51 tests passed.
 - `npm run build` berhasil.
 - `php artisan route:list --except-vendor` berhasil.
+
+## 2026-05-19 - Upload Repository ke GitHub
+Perubahan:
+- Membuat commit awal `Initial Dafydio photobooth cloud app`.
+- Menambahkan remote `origin` ke `git@github.com:errymaricha/errymaricha-dafydio_photobooth_cloud.git`.
+- Push branch `main` ke GitHub.
+
+Keputusan:
+- `.env`, database lokal, `vendor`, `node_modules`, build output, cache, dan file upload storage tetap tidak ikut commit karena sudah di `.gitignore`.
+
+Verifikasi:
+- `git status --short --branch` bersih sebelum push awal.
+- `git push -u origin main` berhasil dan branch `main` tracking `origin/main`.
