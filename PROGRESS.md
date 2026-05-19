@@ -1467,3 +1467,15 @@ Keputusan:
 Verifikasi:
 - `git status --short --branch` bersih sebelum push awal.
 - `git push -u origin main` berhasil dan branch `main` tracking `origin/main`.
+
+## 2026-05-19 - Rename Remote Repository GitHub
+Perubahan:
+- Mengubah remote `origin` dari `git@github.com:errymaricha/errymaricha-dafydio_photobooth_cloud.git` ke `git@github.com:errymaricha/dafydio_photobooth_cloud.git`.
+
+Keputusan:
+- Nama repository GitHub disederhanakan menjadi `errymaricha/dafydio_photobooth_cloud`.
+- Perubahan URL remote tersimpan di konfigurasi Git lokal, sedangkan catatan proses disimpan di `PROGRESS.md`.
+
+Verifikasi:
+- `git remote -v` berhasil menampilkan URL remote baru.
+- `git ls-remote --heads origin main` berhasil dan menemukan branch `main` pada commit `c45fbfce5e48ee69eed1e80e8f5fa2dcb173e3d0`.
