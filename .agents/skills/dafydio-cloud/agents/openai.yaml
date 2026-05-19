@@ -1,0 +1,3 @@
+display_name: Dafydio Cloud
+short_description: Work consistently on Dafydio Photobooth Cloud architecture, auth, UI, APIs, and progress docs.
+default_prompt: Use the Dafydio Cloud skill to follow project boundaries, auth rules, UI direction, multi-tenancy, verification, and progress documentation.

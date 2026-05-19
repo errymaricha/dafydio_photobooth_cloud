@@ -1,0 +1,3 @@
+display_name: Laravel Best Practices
+short_description: Laravel backend conventions for Dafydio Cloud routes, models, migrations, auth, tests, and tenant scope.
+default_prompt: Use Laravel best practices for Dafydio Cloud backend changes, while following the dafydio-cloud skill for product boundaries.
