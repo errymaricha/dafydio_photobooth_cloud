@@ -1516,3 +1516,17 @@ Verifikasi:
 - Cek kolom `stations` berhasil menemukan `api_token_lookup`.
 - `php artisan test --filter=StationApiTest` berhasil, 12 tests passed.
 - Request heartbeat lokal tidak lagi error 500; respons 401 karena token demo tidak cocok dengan data station lokal aktif.
+
+## 2026-05-20 - Set Local Station Cloud Token
+Perubahan operasional:
+- Mengupdate station `STATION-001` di database lokal cloud agar cocok dengan token station yang dipakai aplikasi station.
+- Token asli tidak disimpan di file/repo; database hanya menyimpan `api_token_hash` dan `api_token_lookup`.
+
+Keputusan:
+- Perubahan dilakukan langsung pada record station lokal karena ini sinkronisasi credential operasional, bukan perubahan kode.
+- Station `STATION-001` dipastikan berstatus `active`.
+
+Verifikasi:
+- Record station `STATION-001` memiliki `api_token_hash` dan `api_token_lookup`.
+- `POST http://localhost:8001/api/station/heartbeat` dengan token station berhasil dan mengembalikan `message: OK`.
+- Session `SES-1XCDSRVZ` masih belum ada di cloud setelah token diperbaiki; station perlu menjalankan retry `cloud:sync-pending`.
