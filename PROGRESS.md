@@ -1492,3 +1492,27 @@ Keputusan:
 
 Verifikasi:
 - Perubahan dokumentasi saja; tidak menjalankan test aplikasi.
+
+## 2026-05-20 - Fix Local Station Sync Migration
+Perubahan operasional:
+- Menjalankan migration lokal yang masih pending:
+  - `2026_05_19_000001_add_admin_list_performance_indexes`
+  - `2026_05_19_000002_add_station_token_lookup`
+- Migration menambahkan kolom `stations.api_token_lookup` yang dibutuhkan middleware station token lookup.
+
+Penyebab:
+- Station gagal upload session `SES-1XCDSRVZ` karena cloud membalas HTTP 500.
+- Error database: `Unknown column 'api_token_lookup' in 'where clause'`.
+- Kode aplikasi sudah benar, tetapi database lokal belum menjalankan migration terbaru.
+
+Keputusan:
+- Tidak perlu perubahan kode.
+- Station dapat menjalankan ulang `cloud:sync-pending` setelah migration cloud selesai.
+- Jika setelah ini muncul HTTP 401, berarti token station yang dipakai tidak cocok dengan token station di database cloud.
+
+Verifikasi:
+- `php artisan migrate` berhasil menjalankan dua migration pending.
+- `php artisan migrate:status` menampilkan semua migration sudah `Ran`.
+- Cek kolom `stations` berhasil menemukan `api_token_lookup`.
+- `php artisan test --filter=StationApiTest` berhasil, 12 tests passed.
+- Request heartbeat lokal tidak lagi error 500; respons 401 karena token demo tidak cocok dengan data station lokal aktif.
