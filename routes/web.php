@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -11,6 +9,8 @@ use App\Http\Controllers\Admin\StationController as AdminStationController;
 use App\Http\Controllers\Admin\SyncLogController as AdminSyncLogController;
 use App\Http\Controllers\Admin\TemplateController as AdminTemplateController;
 use App\Http\Controllers\PublicSessionController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -48,6 +48,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function (): v
     Route::get('/sessions/{session}', [AdminSessionController::class, 'show'])->name('sessions.show');
     Route::post('/sessions/{session}/link-customer', [AdminSessionController::class, 'linkCustomer'])->name('sessions.link-customer');
     Route::get('/sync-logs', [AdminSyncLogController::class, 'index'])->name('sync-logs.index');
+    Route::get('/sync-logs/{syncLog}', [AdminSyncLogController::class, 'show'])->name('sync-logs.show');
     Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
     Route::post('/payments/{payment}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
     Route::post('/payments/{payment}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');

@@ -1530,3 +1530,23 @@ Verifikasi:
 - Record station `STATION-001` memiliki `api_token_hash` dan `api_token_lookup`.
 - `POST http://localhost:8001/api/station/heartbeat` dengan token station berhasil dan mengembalikan `message: OK`.
 - Session `SES-1XCDSRVZ` masih belum ada di cloud setelah token diperbaiki; station perlu menjalankan retry `cloud:sync-pending`.
+
+## 2026-05-20 - Optimasi Detail Sync Logs
+Perubahan:
+- Mengubah daftar `/admin/sync-logs` agar hanya mengambil kolom ringkas dan tidak lagi membawa `payload`/`response` penuh per baris.
+- Menambahkan route detail `GET /admin/sync-logs/{syncLog}`.
+- Menambahkan halaman `resources/js/Pages/Admin/SyncLogs/Show.vue` untuk melihat payload dan response penuh.
+- Mengubah UI daftar Sync Logs agar memakai tombol `Detail`, bukan expandable payload inline.
+- Menambahkan test detail sync log dan tenant-scope protection.
+
+Keputusan:
+- Payload/response sync log tetap bisa dicari lewat filter awal, tetapi tidak dikirim ke browser pada daftar tabel.
+- Payload/response penuh hanya dibuka saat admin masuk ke detail log tertentu.
+- Fitur S3/R2 tetap diskip sesuai keputusan saat ini.
+
+Verifikasi:
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan route:list --except-vendor --path=admin/sync-logs` berhasil dan menampilkan route index/detail.
+- `php artisan test --filter=AdminAuthAndStationTokenTest` berhasil, 21 tests passed.
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 53 tests passed dengan 460 assertions.

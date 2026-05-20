@@ -47,12 +47,6 @@ const statusClass = (status) => {
     return 'bg-slate-100 text-[#64748B]';
 };
 
-const jsonPreview = (value) => {
-    if (!value) return '-';
-
-    return JSON.stringify(value, null, 2);
-};
-
 const sidebarItems = [
     ['DB', 'Overview', '/admin', false],
     ['BS', 'Business', '#business', false],
@@ -145,14 +139,14 @@ const bottomItems = [
             </form>
 
             <section class="overflow-hidden rounded-xl border border-[#c3c6d7] bg-white shadow-sm">
-                <div class="hidden grid-cols-[1fr_1fr_1fr_1.6fr] gap-3 border-b border-[#c3c6d7] bg-[#f3f3fe] p-4 text-xs font-semibold uppercase tracking-wide text-[#737686] lg:grid">
+                <div class="hidden grid-cols-[1fr_1fr_1fr_180px] gap-3 border-b border-[#c3c6d7] bg-[#f3f3fe] p-4 text-xs font-semibold uppercase tracking-wide text-[#737686] lg:grid">
                     <span>Sync</span>
                     <span>Station</span>
                     <span>Status</span>
-                    <span>Data</span>
+                    <span>Aksi</span>
                 </div>
 
-                <article v-for="log in logs.data" :key="log.id" class="grid gap-4 border-b border-[#c3c6d7]/50 p-4 last:border-b-0 lg:grid-cols-[1fr_1fr_1fr_1.6fr] lg:items-start">
+                <article v-for="log in logs.data" :key="log.id" class="grid gap-4 border-b border-[#c3c6d7]/50 p-4 last:border-b-0 lg:grid-cols-[1fr_1fr_1fr_180px] lg:items-start">
                     <div>
                         <p class="text-sm font-black">{{ log.topic }}</p>
                         <p class="mt-1 text-xs text-[#737686]">{{ log.direction }}</p>
@@ -167,19 +161,11 @@ const bottomItems = [
                         <span class="rounded-full px-2 py-1 text-[10px] font-black uppercase" :class="statusClass(log.status)">{{ log.status }}</span>
                         <p v-if="log.error_message" class="mt-2 text-xs font-semibold text-[#EF4444]">{{ log.error_message }}</p>
                     </div>
-                    <details class="rounded-lg border border-[#c3c6d7] bg-[#f8fafc]">
-                        <summary class="cursor-pointer px-3 py-2 text-xs font-black text-[#004ac6]">Payload / Response</summary>
-                        <div class="space-y-3 border-t border-[#c3c6d7] p-3">
-                            <div>
-                                <p class="text-[10px] font-black uppercase text-[#737686]">Payload</p>
-                                <pre class="mt-1 max-h-52 overflow-auto whitespace-pre-wrap break-words rounded bg-white p-2 text-[11px] text-[#434655]">{{ jsonPreview(log.payload) }}</pre>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black uppercase text-[#737686]">Response</p>
-                                <pre class="mt-1 max-h-52 overflow-auto whitespace-pre-wrap break-words rounded bg-white p-2 text-[11px] text-[#434655]">{{ jsonPreview(log.response) }}</pre>
-                            </div>
-                        </div>
-                    </details>
+                    <div class="flex items-start lg:justify-end">
+                        <Link class="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#c3c6d7] bg-white px-4 text-xs font-black text-[#004ac6] hover:bg-[#f3f3fe]" :href="log.detail_url">
+                            Detail
+                        </Link>
+                    </div>
                 </article>
 
                 <p v-if="logs.data.length === 0" class="p-6 text-sm text-[#434655]">Belum ada sync log.</p>

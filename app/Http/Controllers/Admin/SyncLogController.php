@@ -17,6 +17,17 @@ class SyncLogController extends Controller
         $status = $request->query('status', 'all');
 
         $logs = StationSyncLog::query()
+            ->select([
+                'id',
+                'tenant_id',
+                'station_id',
+                'direction',
+                'topic',
+                'idempotency_key',
+                'status',
+                'error_message',
+                'created_at',
+            ])
             ->with('station:id,name,code')
             ->where('tenant_id', $request->user()->tenant_id)
             ->when($topic !== 'all', fn ($query) => $query->where('topic', $topic))
@@ -52,9 +63,8 @@ class SyncLogController extends Controller
                 'topic' => $log->topic,
                 'status' => $log->status,
                 'idempotency_key' => $log->idempotency_key,
-                'payload' => $log->payload,
-                'response' => $log->response,
                 'error_message' => $log->error_message,
+                'detail_url' => route('admin.sync-logs.show', $log),
                 'created_at' => $log->created_at?->toDateTimeString(),
             ]),
             'filters' => [
@@ -68,6 +78,30 @@ class SyncLogController extends Controller
                 ->distinct()
                 ->orderBy('topic')
                 ->pluck('topic'),
+        ]);
+    }
+
+    public function show(Request $request, StationSyncLog $syncLog): Response
+    {
+        abort_unless($syncLog->tenant_id === $request->user()->tenant_id, 404);
+
+        $syncLog->load('station:id,name,code');
+
+        return Inertia::render('Admin/SyncLogs/Show', [
+            'log' => [
+                'id' => $syncLog->id,
+                'station_name' => $syncLog->station?->name,
+                'station_code' => $syncLog->station?->code,
+                'direction' => $syncLog->direction,
+                'topic' => $syncLog->topic,
+                'status' => $syncLog->status,
+                'idempotency_key' => $syncLog->idempotency_key,
+                'payload' => $syncLog->payload,
+                'response' => $syncLog->response,
+                'error_message' => $syncLog->error_message,
+                'created_at' => $syncLog->created_at?->toDateTimeString(),
+                'updated_at' => $syncLog->updated_at?->toDateTimeString(),
+            ],
         ]);
     }
 }

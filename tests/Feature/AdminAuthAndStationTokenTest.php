@@ -250,9 +250,72 @@ class AdminAuthAndStationTokenTest extends TestCase
                 ->where('filters.status', 'ok')
                 ->where('logs.data.0.id', $log->id)
                 ->where('logs.data.0.station_code', 'SYNC-001')
-                ->where('logs.data.0.payload.session_code', 'SES-SYNC-001')
+                ->where('logs.data.0.detail_url', url("/admin/sync-logs/{$log->id}"))
                 ->has('logs.data', 1)
             );
+    }
+
+    public function test_tenant_admin_can_view_sync_log_detail_payload(): void
+    {
+        [$user, $tenant] = $this->createTenantAdmin();
+        $station = Station::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Detail Sync Station',
+            'code' => 'SYNC-DETAIL',
+            'status' => 'active',
+        ]);
+
+        $log = StationSyncLog::query()->create([
+            'tenant_id' => $tenant->id,
+            'station_id' => $station->id,
+            'direction' => 'station_to_cloud',
+            'topic' => 'session-sync',
+            'idempotency_key' => 'station:SYNC-DETAIL:session:123',
+            'status' => 'ok',
+            'payload' => ['session_code' => 'SES-DETAIL-001'],
+            'response' => ['message' => 'Session synced'],
+        ]);
+
+        $this->actingAs($user)
+            ->get("/admin/sync-logs/{$log->id}")
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/SyncLogs/Show')
+                ->where('log.id', $log->id)
+                ->where('log.station_code', 'SYNC-DETAIL')
+                ->where('log.payload.session_code', 'SES-DETAIL-001')
+                ->where('log.response.message', 'Session synced')
+            );
+    }
+
+    public function test_tenant_admin_cannot_view_other_tenant_sync_log_detail(): void
+    {
+        [$user] = $this->createTenantAdmin();
+        $otherTenant = Tenant::query()->create([
+            'name' => 'Other Tenant',
+            'slug' => 'other-tenant',
+            'status' => 'active',
+        ]);
+        $otherStation = Station::query()->create([
+            'tenant_id' => $otherTenant->id,
+            'name' => 'Other Station',
+            'code' => 'OTHER-SYNC',
+            'status' => 'active',
+        ]);
+
+        $log = StationSyncLog::query()->create([
+            'tenant_id' => $otherTenant->id,
+            'station_id' => $otherStation->id,
+            'direction' => 'station_to_cloud',
+            'topic' => 'session-sync',
+            'status' => 'ok',
+            'payload' => ['session_code' => 'SES-OTHER-001'],
+            'response' => ['message' => 'Other tenant'],
+        ]);
+
+        $this->actingAs($user)
+            ->get("/admin/sync-logs/{$log->id}")
+            ->assertNotFound();
     }
 
     public function test_tenant_admin_can_link_guest_session_to_customer(): void
