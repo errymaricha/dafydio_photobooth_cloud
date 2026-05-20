@@ -22,8 +22,14 @@ class CloudPrintRequest extends Model
         'status',
         'priority',
         'payment_status',
+        'station_local_id',
+        'station_print_order_id',
+        'station_print_queue_job_id',
+        'claimed_at',
         'station_claimed_at',
         'printed_at',
+        'failed_at',
+        'last_error',
         'cancelled_at',
         'metadata',
     ];
@@ -31,8 +37,10 @@ class CloudPrintRequest extends Model
     protected function casts(): array
     {
         return [
+            'claimed_at' => 'datetime',
             'station_claimed_at' => 'datetime',
             'printed_at' => 'datetime',
+            'failed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'metadata' => 'array',
         ];

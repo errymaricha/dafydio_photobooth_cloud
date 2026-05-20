@@ -234,8 +234,14 @@ Kolom utama:
 - `status`
 - `priority`
 - `payment_status`
+- `station_local_id`
+- `station_print_order_id`
+- `station_print_queue_job_id`
+- `claimed_at`
 - `station_claimed_at`
 - `printed_at`
+- `failed_at`
+- `last_error`
 - `cancelled_at`
 - `metadata`
 - `created_at`
@@ -243,6 +249,8 @@ Kolom utama:
 
 Nilai `status`:
 - `pending`
+- `pending_payment`
+- `pending_operator`
 - `claimed`
 - `printing`
 - `printed`
@@ -259,7 +267,9 @@ Nilai `payment_status`:
 
 Index:
 - index `tenant_id, station_id, status, created_at`
+- index `tenant_id, station_id, status, payment_status, created_at`
 - index `tenant_id, customer_id, created_at`
+- index `station_print_order_id`
 
 ## archive_exports
 Zip/export archive untuk download customer.

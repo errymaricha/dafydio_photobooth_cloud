@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CloudPrintRequest;
 use App\Models\CloudTemplate;
 use App\Models\CustomerTemplateEntitlement;
 use App\Models\Payment;
@@ -100,6 +101,17 @@ class PaymentController extends Controller
             );
         }
 
+        if ($payment->purpose === 'template_print_request' && filled($payment->payload['cloud_print_request_id'] ?? null)) {
+            CloudPrintRequest::query()
+                ->where('tenant_id', $payment->tenant_id)
+                ->whereKey($payment->payload['cloud_print_request_id'])
+                ->where('status', 'pending_payment')
+                ->update([
+                    'status' => 'pending_operator',
+                    'payment_status' => 'paid',
+                ]);
+        }
+
         return back()->with('success', 'Payment approved.');
     }
 
@@ -109,6 +121,19 @@ class PaymentController extends Controller
         abort_unless($payment->status === 'pending', 422);
 
         $payment->update(['status' => 'failed']);
+
+        if ($payment->purpose === 'template_print_request' && filled($payment->payload['cloud_print_request_id'] ?? null)) {
+            CloudPrintRequest::query()
+                ->where('tenant_id', $payment->tenant_id)
+                ->whereKey($payment->payload['cloud_print_request_id'])
+                ->where('status', 'pending_payment')
+                ->update([
+                    'status' => 'failed',
+                    'payment_status' => 'failed',
+                    'failed_at' => now(),
+                    'last_error' => 'Payment rejected.',
+                ]);
+        }
 
         return back()->with('success', 'Payment rejected.');
     }

@@ -35,7 +35,7 @@ class PrintRequestController extends Controller
             'cloud_session_id' => $session->id,
             'cloud_session_asset_id' => $asset->id,
             'quantity' => $data['quantity'],
-            'status' => 'pending',
+            'status' => 'pending_operator',
             'priority' => 'normal',
             'payment_status' => 'not_required',
         ]);

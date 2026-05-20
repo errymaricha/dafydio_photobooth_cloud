@@ -480,51 +480,84 @@ Station wajib menyimpan minimal:
 
 ### Poll Print Requests
 ```http
-GET /api/station/print-requests?status=pending_operator&limit=10
+GET /api/station/print-requests?status=pending&limit=25
+Authorization: Bearer {station_token}
+Accept: application/json
 ```
 
 Response:
 ```json
 {
-  "data": [
-    {
-      "print_request_id": "01H...",
-      "cloud_session_id": "01H...",
-      "asset_id": "01H...",
-      "asset_download_url": "https://signed-download-url",
-      "template": {
-        "cloud_template_id": "01H...",
-        "template_code": "WEDDING-001",
-        "template_name": "Wedding Elegant",
-        "slots": [],
-        "assets": []
-      },
-      "quantity": 1,
-      "priority": "normal",
-      "created_at": "2026-05-11T11:00:00Z"
-    }
-  ],
-  "meta": {},
+  "data": {
+    "print_requests": [
+      {
+        "id": "cloud-print-001",
+        "print_request_id": "cloud-print-001",
+        "cloud_session_id": "01H...",
+        "cloud_session_asset_id": "01H...",
+        "asset_id": "01H...",
+        "asset_download_url": "https://signed-download-url",
+        "station_session_id": "uuid-session-di-station",
+        "session_code": "SES-XXXX",
+        "copies": 2,
+        "quantity": 2,
+        "paper_size": "4R",
+        "priority": "5",
+        "payment_status": "paid",
+        "created_at": "2026-05-11T11:00:00Z"
+      }
+    ]
+  },
+  "meta": {
+    "limit": 25,
+    "status": "pending"
+  },
   "message": null
 }
 ```
 
 Catatan request print dari cloud:
 - Station/operator memproses request yang sudah `pending_operator`.
+- Query `status=pending` menjadi alias siap proses untuk kompatibilitas station dan mencakup status lama `pending` serta status baru `pending_operator`.
 - Status `pending_payment` tidak boleh dipolling sebagai pekerjaan siap print.
+- Request yang sudah punya `claimed_at` tidak dikirim lagi ke polling.
+- `station_session_id` atau `session_code` wajib dipakai station untuk mencari session lokal.
 - Cloud tidak menjalankan printer dan tidak mengirim command print langsung.
 - Operator station harus aktif memilih/memproses antrian print.
 
 ### Update Print Request Status
 ```http
 PATCH /api/station/print-requests/{print_request_id}
+Authorization: Bearer {station_token}
+Accept: application/json
 ```
 
 Request:
 ```json
 {
-  "status": "printing",
-  "error_message": null
+  "status": "claimed",
+  "station_id": "uuid-station",
+  "station_print_order_id": "uuid-print-order",
+  "station_print_queue_job_id": "uuid-print-queue-job",
+  "message": null
+}
+```
+
+Response:
+```json
+{
+  "data": {
+    "print_request_id": "cloud-print-001",
+    "id": "cloud-print-001",
+    "status": "claimed",
+    "station_print_order_id": "uuid-print-order",
+    "station_print_queue_job_id": "uuid-print-queue-job",
+    "claimed_at": "2026-05-20T12:00:00Z",
+    "printed_at": null,
+    "failed_at": null
+  },
+  "meta": {},
+  "message": "Print request updated"
 }
 ```
 
@@ -533,6 +566,20 @@ Allowed status dari station:
 - `printing`
 - `printed`
 - `failed`
+
+Rule status:
+- `pending_payment -> pending_operator` dilakukan oleh cloud setelah payment/approval valid.
+- `pending_operator -> claimed -> printing -> printed`
+- `pending_operator -> failed`
+- `claimed -> failed`
+- `printing -> failed`
+
+Safety:
+- Print request ID stabil dan dipakai sebagai idempotency key utama di station.
+- Claim dengan `station_print_order_id` dan `station_print_queue_job_id` yang sama bersifat idempotent.
+- Claim kedua dengan order/job berbeda ditolak `409`.
+- Token station hanya boleh akses request tenant/station miliknya.
+- Cloud menyimpan `station_id` dari payload sebagai `station_local_id`, plus `station_print_order_id`, `station_print_queue_job_id`, `claimed_at`, `printed_at`, `failed_at`, dan `last_error`.
 
 ## Customer API
 

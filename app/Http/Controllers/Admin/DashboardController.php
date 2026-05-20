@@ -44,7 +44,7 @@ class DashboardController extends Controller
                 'sessions_total' => CloudSession::query()->where('tenant_id', $tenantId)->count(),
                 'assets_uploaded' => $assetsUploaded,
                 'assets_total' => $assetsTotal,
-                'pending_prints' => CloudPrintRequest::query()->where('tenant_id', $tenantId)->where('status', 'pending')->count(),
+                'pending_prints' => CloudPrintRequest::query()->where('tenant_id', $tenantId)->whereIn('status', ['pending', 'pending_operator'])->count(),
                 'customers' => Customer::query()->where('tenant_id', $tenantId)->count(),
                 'premium_customers' => CustomerSubscription::query()->where('tenant_id', $tenantId)->where('plan', 'premium')->where('status', 'active')->count(),
                 'templates' => CloudTemplate::query()->where('tenant_id', $tenantId)->count(),
@@ -66,7 +66,7 @@ class DashboardController extends Controller
                     'last_seen_at' => $station->last_seen_at?->diffForHumans(),
                     'is_online' => $station->last_seen_at?->greaterThanOrEqualTo(now()->subMinutes(5)) ?? false,
                     'has_token' => filled($station->api_token_hash),
-            ]),
+                ]),
             'recentSessions' => CloudSession::query()
                 ->with(['customer:id,name,whatsapp_number', 'station:id,name'])
                 ->withCount('assets')
@@ -82,7 +82,7 @@ class DashboardController extends Controller
                     'sync_status' => $session->sync_status,
                     'assets_count' => $session->assets_count,
                     'created_at' => $session->created_at?->diffForHumans(),
-            ]),
+                ]),
             'printRequests' => CloudPrintRequest::query()
                 ->with(['customer:id,name,whatsapp_number', 'station:id,name'])
                 ->where('tenant_id', $tenantId)
@@ -97,7 +97,7 @@ class DashboardController extends Controller
                     'status' => $printRequest->status,
                     'payment_status' => $printRequest->payment_status,
                     'created_at' => $printRequest->created_at?->diffForHumans(),
-            ]),
+                ]),
             'syncLogs' => StationSyncLog::query()
                 ->with('station:id,name')
                 ->where('tenant_id', $tenantId)

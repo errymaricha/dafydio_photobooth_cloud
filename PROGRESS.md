@@ -1550,3 +1550,47 @@ Verifikasi:
 - `php artisan test --filter=AdminAuthAndStationTokenTest` berhasil, 21 tests passed.
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 53 tests passed dengan 460 assertions.
+
+## 2026-05-20 - Cloud Print Request Claim Flow untuk Station
+Perubahan:
+- Mematangkan endpoint polling station `GET /api/station/print-requests?status=pending&limit=25`.
+- Response polling sekarang berbentuk `data.print_requests` dan menyertakan `station_session_id`, `session_code`, `copies`, `paper_size`, `priority`, dan `payment_status`.
+- Polling hanya mengembalikan request milik tenant/station dari token, sudah siap diproses, payment `paid`/`not_required`, dan belum punya `claimed_at`.
+- Query `status=pending` menjadi alias siap proses untuk status lama `pending` dan status baru `pending_operator`.
+- Mematangkan `PATCH /api/station/print-requests/{id}` untuk status `claimed`, `printing`, `printed`, dan `failed`.
+- Menambahkan migration `2026_05_20_000001_add_station_print_claim_fields.php`.
+- Menambahkan field penyimpanan claim/print:
+  - `station_local_id`
+  - `station_print_order_id`
+  - `station_print_queue_job_id`
+  - `claimed_at`
+  - `failed_at`
+  - `last_error`
+- Menambahkan status transition guard:
+  - `pending`/`pending_operator -> claimed|failed`
+  - `claimed -> claimed|printing|failed`
+  - `printing -> printing|printed|failed`
+  - `printed -> printed`
+  - `failed -> failed`
+- Claim dengan order/job sama dibuat idempotent; claim ulang dengan order/job berbeda ditolak `409`.
+- Admin approve payment `template_print_request` sekarang dapat mengubah print request `pending_payment` menjadi `pending_operator`.
+- Customer print request tanpa payment sekarang langsung dibuat sebagai `pending_operator`.
+- Memperbarui `API_CONTRACT.md` dan `DATA_MODEL.md`.
+
+Keputusan:
+- `station_id` dari payload station disimpan sebagai `station_local_id` agar tidak bentrok dengan kolom `station_id` cloud.
+- Cloud tetap tidak mengontrol printer; cloud hanya mengoordinasikan antrian, claim, dan status.
+- Fitur Storage S3/R2 tetap diskip.
+
+Catatan deploy:
+- Jalankan `php artisan migrate` di environment cloud agar field claim print request tersedia.
+
+Verifikasi:
+- `php artisan migrate` berhasil menjalankan migration claim print request lokal.
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan route:list --except-vendor --path=api/station/print-requests` berhasil.
+- `php artisan test --filter=StationApiTest` berhasil, 15 tests passed.
+- `php artisan test --filter=AdminAuthAndStationTokenTest` berhasil, 21 tests passed.
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 56 tests passed dengan 482 assertions.
+- `php artisan migrate:status` menampilkan `2026_05_20_000001_add_station_print_claim_fields` sudah `Ran`.

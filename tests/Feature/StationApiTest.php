@@ -11,9 +11,9 @@ use App\Models\Station;
 use App\Models\Tenant;
 use App\Support\StationToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class StationApiTest extends TestCase
@@ -548,16 +548,23 @@ class StationApiTest extends TestCase
             'cloud_session_id' => $session->id,
             'cloud_session_asset_id' => $asset->id,
             'quantity' => 2,
-            'status' => 'pending',
-            'priority' => 'normal',
-            'payment_status' => 'not_required',
+            'status' => 'pending_operator',
+            'priority' => '5',
+            'payment_status' => 'paid',
+            'metadata' => ['paper_size' => '4R'],
         ]);
 
         $this->withToken($token)
-            ->getJson('/api/station/print-requests')
+            ->getJson('/api/station/print-requests?status=pending&limit=25')
             ->assertOk()
-            ->assertJsonPath('data.0.print_request_id', $printRequest->id)
-            ->assertJsonPath('data.0.asset_download_url', url('/storage/tenants/test/session/photo.jpg'));
+            ->assertJsonPath('data.print_requests.0.id', $printRequest->id)
+            ->assertJsonPath('data.print_requests.0.station_session_id', 'local-session-1')
+            ->assertJsonPath('data.print_requests.0.session_code', 'SES-LOCAL-001')
+            ->assertJsonPath('data.print_requests.0.copies', 2)
+            ->assertJsonPath('data.print_requests.0.paper_size', '4R')
+            ->assertJsonPath('data.print_requests.0.priority', '5')
+            ->assertJsonPath('data.print_requests.0.payment_status', 'paid')
+            ->assertJsonPath('data.print_requests.0.asset_download_url', url('/storage/tenants/test/session/photo.jpg'));
     }
 
     public function test_station_can_update_own_print_request_status(): void
@@ -572,10 +579,32 @@ class StationApiTest extends TestCase
             'cloud_session_id' => $session->id,
             'cloud_session_asset_id' => $asset->id,
             'quantity' => 1,
-            'status' => 'pending',
+            'status' => 'pending_operator',
             'priority' => 'normal',
-            'payment_status' => 'not_required',
+            'payment_status' => 'paid',
         ]);
+
+        $this->withToken($token)
+            ->patchJson("/api/station/print-requests/{$printRequest->id}", [
+                'status' => 'claimed',
+                'station_id' => 'station-local-uuid',
+                'station_print_order_id' => 'print-order-uuid',
+                'station_print_queue_job_id' => 'queue-job-uuid',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'claimed')
+            ->assertJsonPath('data.station_print_order_id', 'print-order-uuid');
+
+        $this->assertNotNull($printRequest->refresh()->claimed_at);
+        $this->assertSame('station-local-uuid', $printRequest->station_local_id);
+        $this->assertSame('queue-job-uuid', $printRequest->station_print_queue_job_id);
+
+        $this->withToken($token)
+            ->patchJson("/api/station/print-requests/{$printRequest->id}", [
+                'status' => 'printing',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'printing');
 
         $this->withToken($token)
             ->patchJson("/api/station/print-requests/{$printRequest->id}", [
@@ -587,20 +616,122 @@ class StationApiTest extends TestCase
         $this->assertNotNull($printRequest->refresh()->printed_at);
     }
 
-    private function createStation(): array
+    public function test_station_poll_print_requests_excludes_payment_pending_and_claimed_requests(): void
     {
-        $tenant = Tenant::query()->create([
-            'name' => 'Test Tenant',
-            'slug' => 'test-tenant',
-            'status' => 'active',
+        [$station, $token] = $this->createStation();
+        [$session, $asset] = $this->createUploadedAsset($station);
+
+        CloudPrintRequest::query()->create([
+            'tenant_id' => $station->tenant_id,
+            'station_id' => $station->id,
+            'customer_id' => $session->customer_id,
+            'cloud_session_id' => $session->id,
+            'cloud_session_asset_id' => $asset->id,
+            'quantity' => 1,
+            'status' => 'pending_payment',
+            'priority' => 'normal',
+            'payment_status' => 'pending',
         ]);
 
-        $token = 'station-token';
+        CloudPrintRequest::query()->create([
+            'tenant_id' => $station->tenant_id,
+            'station_id' => $station->id,
+            'customer_id' => $session->customer_id,
+            'cloud_session_id' => $session->id,
+            'cloud_session_asset_id' => $asset->id,
+            'quantity' => 1,
+            'status' => 'claimed',
+            'priority' => 'normal',
+            'payment_status' => 'paid',
+            'claimed_at' => now(),
+        ]);
+
+        $this->withToken($token)
+            ->getJson('/api/station/print-requests?status=pending&limit=25')
+            ->assertOk()
+            ->assertJsonCount(0, 'data.print_requests');
+    }
+
+    public function test_station_claim_print_request_is_idempotent_and_conflict_safe(): void
+    {
+        [$station, $token] = $this->createStation();
+        [$session, $asset] = $this->createUploadedAsset($station);
+
+        $printRequest = CloudPrintRequest::query()->create([
+            'tenant_id' => $station->tenant_id,
+            'station_id' => $station->id,
+            'customer_id' => $session->customer_id,
+            'cloud_session_id' => $session->id,
+            'cloud_session_asset_id' => $asset->id,
+            'quantity' => 1,
+            'status' => 'pending_operator',
+            'priority' => 'normal',
+            'payment_status' => 'paid',
+        ]);
+
+        $claimPayload = [
+            'status' => 'claimed',
+            'station_id' => 'station-local-uuid',
+            'station_print_order_id' => 'print-order-uuid',
+            'station_print_queue_job_id' => 'queue-job-uuid',
+        ];
+
+        $this->withToken($token)
+            ->patchJson("/api/station/print-requests/{$printRequest->id}", $claimPayload)
+            ->assertOk()
+            ->assertJsonPath('data.status', 'claimed');
+
+        $this->withToken($token)
+            ->patchJson("/api/station/print-requests/{$printRequest->id}", $claimPayload)
+            ->assertOk()
+            ->assertJsonPath('data.status', 'claimed');
+
+        $this->withToken($token)
+            ->patchJson("/api/station/print-requests/{$printRequest->id}", [
+                ...$claimPayload,
+                'station_print_order_id' => 'different-print-order',
+            ])
+            ->assertStatus(409);
+    }
+
+    public function test_station_cannot_update_other_station_print_request(): void
+    {
+        [$station, $token] = $this->createStation();
+        [$otherStation] = $this->createStation('other-token', 'ST-002');
+        [$session, $asset] = $this->createUploadedAsset($otherStation);
+
+        $printRequest = CloudPrintRequest::query()->create([
+            'tenant_id' => $station->tenant_id,
+            'station_id' => $otherStation->id,
+            'customer_id' => $session->customer_id,
+            'cloud_session_id' => $session->id,
+            'cloud_session_asset_id' => $asset->id,
+            'quantity' => 1,
+            'status' => 'pending_operator',
+            'priority' => 'normal',
+            'payment_status' => 'paid',
+        ]);
+
+        $this->withToken($token)
+            ->patchJson("/api/station/print-requests/{$printRequest->id}", [
+                'status' => 'claimed',
+            ])
+            ->assertNotFound();
+    }
+
+    private function createStation(string $token = 'station-token', string $code = 'ST-001'): array
+    {
+        $tenant = Tenant::query()->firstOrCreate([
+            'slug' => 'test-tenant',
+        ], [
+            'name' => 'Test Tenant',
+            'status' => 'active',
+        ]);
 
         $station = Station::query()->create([
             'tenant_id' => $tenant->id,
             'name' => 'Station Test',
-            'code' => 'ST-001',
+            'code' => $code,
             'api_token_hash' => Hash::make($token),
             'api_token_lookup' => StationToken::lookupHash($token),
             'status' => 'active',
@@ -626,6 +757,11 @@ class StationApiTest extends TestCase
             'station_session_id' => 'local-session-1',
             'title' => 'Event Test',
             'sync_status' => 'complete',
+            'metadata' => [
+                'station_session' => [
+                    'session_code' => 'SES-LOCAL-001',
+                ],
+            ],
         ]);
 
         $asset = CloudSessionAsset::query()->create([
