@@ -20,6 +20,12 @@ class PublicSessionController extends Controller
     {
         $session = $this->findSession($sessionCode);
         $assets = $this->publicAssets($session, $sessionCode);
+        $shareUrl = route('public.sessions.show', ['sessionCode' => $sessionCode]);
+        $coverImageUrl = $assets->firstWhere('type', 'framed')['file_url']
+            ?? $assets->first()['file_url']
+            ?? url('/images/dafydio-booth-icon.png');
+        $ogTitle = 'Gallery Foto Dafydio Photobooth';
+        $ogDescription = 'Lihat, download, dan cetak ulang foto kamu dari Dafydio Cloud.';
 
         return Inertia::render('Public/SessionShow', [
             'session' => [
@@ -29,8 +35,15 @@ class PublicSessionController extends Controller
                 'sync_status' => $session->sync_status,
                 'created_at' => $session->created_at?->toDateTimeString(),
                 'station_name' => $session->station?->name,
-                'share_url' => route('public.sessions.show', ['sessionCode' => $sessionCode]),
+                'share_url' => $shareUrl,
                 'download_all_url' => route('public.sessions.download', ['sessionCode' => $sessionCode]),
+                'cover_image_url' => $coverImageUrl,
+                'og' => [
+                    'title' => $ogTitle,
+                    'description' => $ogDescription,
+                    'image' => $coverImageUrl,
+                    'url' => $shareUrl,
+                ],
             ],
             'assets' => $assets,
         ]);

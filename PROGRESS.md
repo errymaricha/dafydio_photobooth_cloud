@@ -1594,3 +1594,26 @@ Verifikasi:
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 56 tests passed dengan 482 assertions.
 - `php artisan migrate:status` menampilkan `2026_05_20_000001_add_station_print_claim_fields` sudah `Ran`.
+
+## 2026-05-21 - OG Meta Public Gallery untuk Share WhatsApp
+Perubahan:
+- Menambahkan metadata Open Graph/Twitter Card pada halaman public gallery `/{sessionCode}`.
+- `PublicSessionController` sekarang mengirim `session.cover_image_url` dan `session.og`.
+- Cover preview memakai asset `framed` pertama yang uploaded, fallback ke asset pertama, lalu fallback ke ikon aplikasi.
+- `resources/js/Pages/Public/SessionShow.vue` memakai Inertia `Head` untuk mengisi:
+  - `og:title`
+  - `og:description`
+  - `og:image`
+  - `og:url`
+  - `og:type`
+  - Twitter card metadata.
+
+Keputusan:
+- URL yang dishare tetap URL gallery pendek seperti `/SES-LM7CMO5G`, bukan URL file storage panjang.
+- Thumbnail WhatsApp tetap membutuhkan domain publik yang bisa diakses WhatsApp; `localhost` tidak bisa dipakai untuk preview WhatsApp real.
+
+Verifikasi:
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan test --filter=PublicSessionGalleryTest` berhasil, 1 test passed.
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 56 tests passed dengan 492 assertions.

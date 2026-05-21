@@ -1,4 +1,5 @@
 <script setup>
+import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const props = defineProps({
@@ -23,6 +24,10 @@ const galleryIndex = ref(0);
 const touchStartX = ref(0);
 
 const currentGalleryAsset = computed(() => galleryAssets.value[galleryIndex.value] || null);
+const ogTitle = computed(() => props.session.og?.title || 'Gallery Foto Dafydio Photobooth');
+const ogDescription = computed(() => props.session.og?.description || 'Lihat, download, dan cetak ulang foto kamu dari Dafydio Cloud.');
+const ogImage = computed(() => props.session.og?.image || props.session.cover_image_url || '/images/dafydio-booth-icon.png');
+const ogUrl = computed(() => props.session.og?.url || props.session.share_url);
 
 const formatBytes = (value) => {
     const bytes = Number(value || 0);
@@ -102,6 +107,19 @@ const finishTouch = (event, callback) => {
 </script>
 
 <template>
+    <Head :title="`${session.code} - Gallery Foto Dafydio Photobooth`">
+        <meta head-key="description" name="description" :content="ogDescription">
+        <meta head-key="og:title" property="og:title" :content="ogTitle">
+        <meta head-key="og:description" property="og:description" :content="ogDescription">
+        <meta head-key="og:image" property="og:image" :content="ogImage">
+        <meta head-key="og:url" property="og:url" :content="ogUrl">
+        <meta head-key="og:type" property="og:type" content="website">
+        <meta head-key="twitter:card" name="twitter:card" content="summary_large_image">
+        <meta head-key="twitter:title" name="twitter:title" :content="ogTitle">
+        <meta head-key="twitter:description" name="twitter:description" :content="ogDescription">
+        <meta head-key="twitter:image" name="twitter:image" :content="ogImage">
+    </Head>
+
     <main class="min-h-[100dvh] bg-[#F8FAFC] pb-10 text-[#191b23]">
         <section class="mx-auto max-w-5xl px-4 pt-5">
             <header class="mb-4 flex items-center justify-between gap-3">
