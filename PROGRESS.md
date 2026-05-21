@@ -1617,3 +1617,20 @@ Verifikasi:
 - `php artisan test --filter=PublicSessionGalleryTest` berhasil, 1 test passed.
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 56 tests passed dengan 492 assertions.
+
+## 2026-05-21 - Dynamic SEO Meta Public Gallery
+Perubahan:
+- Mengubah title public gallery agar unik per session dengan format `{session_title} - {session_code} | Dafydio Photobooth`.
+- Mengubah description agar menyebut `session_code`.
+- Menambahkan canonical URL di Inertia `Head`.
+- Memperbarui test public gallery untuk memastikan OG title, description, image, URL, dan canonical bersifat dinamis.
+
+Keputusan:
+- Meta tidak lagi statis untuk semua gallery agar lebih baik untuk SEO/social preview dan mengurangi risiko duplikat title/description.
+- URL canonical tetap memakai public gallery URL pendek, bukan URL file storage.
+
+Verifikasi:
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan test --filter=PublicSessionGalleryTest` berhasil, 1 test passed.
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 56 tests passed dengan 494 assertions.

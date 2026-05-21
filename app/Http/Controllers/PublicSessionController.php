@@ -24,8 +24,9 @@ class PublicSessionController extends Controller
         $coverImageUrl = $assets->firstWhere('type', 'framed')['file_url']
             ?? $assets->first()['file_url']
             ?? url('/images/dafydio-booth-icon.png');
-        $ogTitle = 'Gallery Foto Dafydio Photobooth';
-        $ogDescription = 'Lihat, download, dan cetak ulang foto kamu dari Dafydio Cloud.';
+        $sessionTitle = $session->title ?: 'Gallery Foto';
+        $ogTitle = "{$sessionTitle} - {$sessionCode} | Dafydio Photobooth";
+        $ogDescription = "Lihat, download, dan cetak ulang foto session {$sessionCode} dari Dafydio Cloud.";
 
         return Inertia::render('Public/SessionShow', [
             'session' => [
@@ -43,6 +44,7 @@ class PublicSessionController extends Controller
                     'description' => $ogDescription,
                     'image' => $coverImageUrl,
                     'url' => $shareUrl,
+                    'canonical' => $shareUrl,
                 ],
             ],
             'assets' => $assets,

@@ -24,10 +24,11 @@ const galleryIndex = ref(0);
 const touchStartX = ref(0);
 
 const currentGalleryAsset = computed(() => galleryAssets.value[galleryIndex.value] || null);
-const ogTitle = computed(() => props.session.og?.title || 'Gallery Foto Dafydio Photobooth');
-const ogDescription = computed(() => props.session.og?.description || 'Lihat, download, dan cetak ulang foto kamu dari Dafydio Cloud.');
+const ogTitle = computed(() => props.session.og?.title || `${props.session.title || 'Gallery Foto'} - ${props.session.code} | Dafydio Photobooth`);
+const ogDescription = computed(() => props.session.og?.description || `Lihat, download, dan cetak ulang foto session ${props.session.code} dari Dafydio Cloud.`);
 const ogImage = computed(() => props.session.og?.image || props.session.cover_image_url || '/images/dafydio-booth-icon.png');
 const ogUrl = computed(() => props.session.og?.url || props.session.share_url);
+const canonicalUrl = computed(() => props.session.og?.canonical || ogUrl.value);
 
 const formatBytes = (value) => {
     const bytes = Number(value || 0);
@@ -107,7 +108,8 @@ const finishTouch = (event, callback) => {
 </script>
 
 <template>
-    <Head :title="`${session.code} - Gallery Foto Dafydio Photobooth`">
+    <Head :title="ogTitle">
+        <link head-key="canonical" rel="canonical" :href="canonicalUrl">
         <meta head-key="description" name="description" :content="ogDescription">
         <meta head-key="og:title" property="og:title" :content="ogTitle">
         <meta head-key="og:description" property="og:description" :content="ogDescription">
