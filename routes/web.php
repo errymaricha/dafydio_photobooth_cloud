@@ -33,7 +33,7 @@ Route::get('/customer/dashboard', function () {
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/admin/login', fn () => redirect()->route('login', ['mode' => 'admin']))->name('admin.login');
-    Route::post('/login/admin', [AuthController::class, 'store'])->name('admin.login.store');
+    Route::post('/login/admin', [AuthController::class, 'store'])->middleware('throttle:admin-login')->name('admin.login.store');
 });
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function (): void {

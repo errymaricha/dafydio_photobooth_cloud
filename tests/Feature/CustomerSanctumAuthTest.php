@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Customer;
 use App\Models\CloudSession;
 use App\Models\CloudSessionAsset;
+use App\Models\Customer;
 use App\Models\Station;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -190,6 +190,29 @@ class CustomerSanctumAuthTest extends TestCase
             'whatsapp_number' => $customer->whatsapp_number,
             'password' => 'wrong-password',
         ])->assertUnprocessable();
+    }
+
+    public function test_customer_login_is_rate_limited(): void
+    {
+        [$tenant, $customer] = $this->createCustomer();
+
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.10'])
+                ->postJson('/api/customer/auth/login', [
+                    'tenant_slug' => $tenant->slug,
+                    'whatsapp_number' => $customer->whatsapp_number,
+                    'password' => 'wrong-password',
+                ])
+                ->assertUnprocessable();
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.10'])
+            ->postJson('/api/customer/auth/login', [
+                'tenant_slug' => $tenant->slug,
+                'whatsapp_number' => $customer->whatsapp_number,
+                'password' => 'wrong-password',
+            ])
+            ->assertTooManyRequests();
     }
 
     private function createCustomer(): array

@@ -1634,3 +1634,38 @@ Verifikasi:
 - `php artisan test --filter=PublicSessionGalleryTest` berhasil, 1 test passed.
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 56 tests passed dengan 494 assertions.
+
+## 2026-05-21 - Production Hardening Tahap Awal
+Perubahan:
+- Menambahkan `.env.production.example` sebagai template konfigurasi production.
+- Menambahkan rate limiter di `AppServiceProvider`:
+  - `admin-login`: 5 request/menit.
+  - `customer-login`: 5 request/menit per IP + tenant + WhatsApp.
+  - `customer-api`: 90 request/menit per customer/IP.
+  - `station-api`: 120 request/menit per station token/IP.
+  - `station-upload`: 60 request/menit per station token/IP.
+  - `webhooks`: 30 request/menit per IP.
+- Menerapkan middleware throttle ke:
+  - admin login web.
+  - customer login API.
+  - customer API Sanctum.
+  - station API.
+  - station upload endpoint.
+  - payment webhook placeholder.
+- Menambahkan `meta robots noindex,nofollow` untuk public gallery agar gallery customer tidak diindeks search engine.
+- Menambahkan test rate limit customer login.
+
+Keputusan:
+- Public gallery tetap shareable via WhatsApp, tetapi tidak diarahkan untuk SEO indexing publik.
+- `.env.production.example` mengaktifkan `APP_DEBUG=false`, HTTPS URL, encrypted/secure session cookie, database queue/cache, dan public disk awal.
+- Storage R2/S3 tetap opsional dan belum diaktifkan sebagai default.
+
+Verifikasi:
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan test --filter=CustomerSanctumAuthTest` berhasil, 8 tests passed.
+- `php artisan test --filter=StationApiTest` berhasil, 15 tests passed.
+- `npm run build` berhasil.
+- `php artisan route:list --except-vendor --path=api/customer` berhasil.
+- `php artisan route:list --except-vendor --path=api/station` berhasil.
+- `php artisan route:list --except-vendor --path=api/webhooks` berhasil.
+- `php artisan test` berhasil, 57 tests passed dengan 500 assertions.

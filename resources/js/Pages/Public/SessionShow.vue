@@ -111,6 +111,7 @@ const finishTouch = (event, callback) => {
     <Head :title="ogTitle">
         <link head-key="canonical" rel="canonical" :href="canonicalUrl">
         <meta head-key="description" name="description" :content="ogDescription">
+        <meta head-key="robots" name="robots" content="noindex, nofollow">
         <meta head-key="og:title" property="og:title" :content="ogTitle">
         <meta head-key="og:description" property="og:description" :content="ogDescription">
         <meta head-key="og:image" property="og:image" :content="ogImage">
