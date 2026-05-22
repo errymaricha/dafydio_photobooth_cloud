@@ -11,6 +11,26 @@ Dokumen ini adalah catatan status kerja. Setiap perubahan penting harus ditambah
 - Cloud tetap hanya menjadi arsip, portal, marketplace, billing, editor, dan print request coordinator.
 - Station tetap menjadi executor capture dan physical printing.
 
+## 2026-05-22 - Customer Print Flow Redesign
+Perubahan:
+- Meredesain dashboard customer agar proses cetak lebih mudah dipahami dengan label tab mobile `Foto`, `Cetak`, `Template`, dan `Editor`.
+- Menambahkan ringkasan `Print aktif` di header customer ketika ada request cetak yang masih berjalan.
+- Menambahkan tombol `Cetak` langsung pada latest session dan setiap item session, sehingga customer tidak perlu masuk detail dulu untuk request print.
+- Mengubah request print menjadi flow konfirmasi: pilih foto, lihat preview, atur jumlah copy, lalu kirim request cetak.
+- Tab `Cetak` sekarang menampilkan alur 3 langkah dan status cetak dengan label Bahasa Indonesia yang lebih jelas.
+
+File utama:
+- `resources/js/Pages/Customer/Dashboard.vue`
+- `PROGRESS.md`
+
+Verifikasi:
+- `npm run build` berhasil.
+- `php artisan test --filter=CustomerSanctumAuthTest` berhasil, 9 tests passed dengan 46 assertions.
+- `php artisan test` berhasil, 59 tests passed dengan 521 assertions.
+
+Catatan lanjutan:
+- Flow ini masih memakai field `quantity` yang sudah tersedia. Opsi paper size, catatan customer, dan pilihan pickup/payment bisa ditambahkan setelah struktur database print request diperluas.
+
 ## 2026-05-22 - Customer Print Request Status
 Perubahan:
 - Menambahkan endpoint customer `GET /api/customer/print-requests` untuk melihat daftar request cetak milik customer login.

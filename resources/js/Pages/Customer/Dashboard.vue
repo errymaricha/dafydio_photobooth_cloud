@@ -19,6 +19,7 @@ const processingAssetId = ref(null);
 const processingTemplateId = ref(null);
 const processingEditAssetId = ref(null);
 const selectedSession = ref(null);
+const printDraft = ref(null);
 const activeView = ref('sessions');
 const selectedTemplateId = ref('');
 const askingName = ref(false);
@@ -34,6 +35,7 @@ const totalAssets = computed(() => sessions.value.reduce((total, session) => tot
 const uploadedAssets = computed(() => sessions.value.reduce((total, session) => total + uploadedSessionAssets(session).length, 0));
 const latestSession = computed(() => visibleSessions.value[0] || null);
 const readyTemplates = computed(() => ownedTemplates.value);
+const latestActivePrintRequest = computed(() => activePrintRequests.value[0] || null);
 
 const customerHeaders = () => ({
     Authorization: `Bearer ${localStorage.getItem('dafydio_customer_token')}`,
@@ -259,7 +261,60 @@ const downloadAsset = async (session, preferredAsset = null) => {
     }
 };
 
-const requestPrint = async (session, preferredAsset = null) => {
+const printStatusLabel = (status) => ({
+    pending_operator: 'Menunggu Station',
+    claimed: 'Sudah Diambil',
+    printing: 'Sedang Dicetak',
+    printed: 'Selesai',
+    failed: 'Gagal',
+    pending_payment: 'Menunggu Bayar',
+}[status] || status || 'Print Request');
+
+const printStatusClass = (status) => {
+    if (status === 'printed') return 'bg-green-100 text-[#10B981]';
+    if (status === 'failed') return 'bg-red-100 text-red-700';
+    if (status === 'printing') return 'bg-[#dbe1ff] text-[#003ea8]';
+    if (status === 'claimed') return 'bg-[#ffddb8] text-[#653e00]';
+
+    return 'bg-[#f3f3fe] text-[#434655]';
+};
+
+const printStatusDescription = (request) => {
+    if (request?.last_error) return request.last_error;
+
+    return {
+        pending_operator: 'Request sudah masuk cloud dan menunggu station mengambil antrian cetak.',
+        claimed: 'Station sudah mengambil request ini. Operator akan memproses ke printer.',
+        printing: 'Foto sedang masuk proses cetak di station.',
+        printed: 'Foto sudah selesai dicetak.',
+        failed: 'Request gagal diproses. Hubungi operator untuk dicoba ulang.',
+        pending_payment: 'Request menunggu pembayaran sebelum diproses station.',
+    }[request?.status] || 'Status request akan diperbarui otomatis setelah station polling.';
+};
+
+const openPrintRequest = (session, preferredAsset = null) => {
+    const asset = preferredAsset || firstAsset(session);
+
+    actionMessage.value = '';
+    actionError.value = '';
+
+    if (!asset) {
+        actionError.value = 'Asset belum tersedia untuk dicetak.';
+        return;
+    }
+
+    printDraft.value = {
+        session,
+        asset,
+        quantity: 1,
+    };
+};
+
+const closePrintRequest = () => {
+    printDraft.value = null;
+};
+
+const requestPrint = async (session, preferredAsset = null, quantity = 1) => {
     const asset = preferredAsset || firstAsset(session);
 
     actionMessage.value = '';
@@ -276,13 +331,15 @@ const requestPrint = async (session, preferredAsset = null) => {
         await window.axios.post('/api/customer/print-requests', {
             cloud_session_id: session.id,
             cloud_session_asset_id: asset.id,
-            quantity: 1,
+            quantity,
         }, {
             headers: customerHeaders(),
         });
 
         actionMessage.value = 'Print request berhasil dibuat.';
         await fetchPrintRequests();
+        activeView.value = 'prints';
+        closePrintRequest();
     } catch (error) {
         if (error.response?.status === 401) {
             redirectToLogin();
@@ -293,6 +350,14 @@ const requestPrint = async (session, preferredAsset = null) => {
     } finally {
         processingAssetId.value = null;
     }
+};
+
+const submitPrintDraft = async () => {
+    if (!printDraft.value?.session || !printDraft.value?.asset) return;
+
+    const quantity = Math.min(Math.max(Number(printDraft.value.quantity || 1), 1), 20);
+
+    await requestPrint(printDraft.value.session, printDraft.value.asset, quantity);
 };
 
 const shareGalleryUrl = (session) => {
@@ -482,8 +547,21 @@ onMounted(() => {
         <section class="mx-auto max-w-6xl px-4 py-5">
             <div class="mb-5 rounded-xl border border-[#c3c6d7] bg-white p-5 shadow-sm">
                 <p class="text-xs font-bold uppercase tracking-wide text-[#737686]">Customer Portal</p>
-                <h1 class="mt-2 text-2xl font-black leading-tight">Halo, {{ customerName }}</h1>
-                <p class="mt-2 text-sm leading-6 text-[#434655]">Lihat session, download foto, share gallery, atau request print.</p>
+                <div class="mt-2 grid gap-4 lg:grid-cols-[1fr_320px] lg:items-end">
+                    <div>
+                        <h1 class="text-2xl font-black leading-tight">Halo, {{ customerName }}</h1>
+                        <p class="mt-2 text-sm leading-6 text-[#434655]">Pilih session, cek foto, lalu buat request cetak dalam beberapa langkah sederhana.</p>
+                    </div>
+                    <div v-if="latestActivePrintRequest" class="rounded-xl border border-[#dbe1ff] bg-[#f3f3fe] p-3">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#737686]">Print aktif</p>
+                        <div class="mt-2 flex items-center justify-between gap-3">
+                            <span class="truncate text-sm font-black">{{ latestActivePrintRequest.session_title || 'Photobooth Session' }}</span>
+                            <span class="shrink-0 rounded-full px-2 py-1 text-[10px] font-black uppercase" :class="printStatusClass(latestActivePrintRequest.status)">
+                                {{ printStatusLabel(latestActivePrintRequest.status) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
                 <button v-if="!askingName" class="mt-3 inline-flex min-h-10 items-center rounded-lg border border-[#c3c6d7] bg-white px-3 text-xs font-black text-[#004ac6]" type="button" @click="askingName = true">
                     Edit Nama
                 </button>
@@ -509,8 +587,8 @@ onMounted(() => {
                         <p class="text-xs font-bold text-[#737686]">Ready</p>
                     </div>
                     <div class="rounded-xl bg-[#f3f3fe] p-3">
-                        <p class="text-lg font-black text-[#004ac6]">{{ ownedTemplates.length }}</p>
-                        <p class="text-xs font-bold text-[#737686]">Template</p>
+                        <p class="text-lg font-black text-[#004ac6]">{{ activePrintRequests.length }}</p>
+                        <p class="text-xs font-bold text-[#737686]">Print Aktif</p>
                     </div>
                 </div>
             </div>
@@ -520,16 +598,16 @@ onMounted(() => {
             <p v-if="actionError" class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700">{{ actionError }}</p>
 
             <div class="mb-5 grid grid-cols-4 gap-2 rounded-xl border border-[#c3c6d7] bg-white p-2 shadow-sm">
-                <button class="min-h-11 rounded-lg text-sm font-black" :class="activeView === 'sessions' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'sessions'">
-                    Sessions
+                <button class="min-h-11 rounded-lg text-xs font-black sm:text-sm" :class="activeView === 'sessions' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'sessions'">
+                    Foto
                 </button>
-                <button class="min-h-11 rounded-lg text-sm font-black" :class="activeView === 'prints' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'prints'">
-                    Prints
+                <button class="min-h-11 rounded-lg text-xs font-black sm:text-sm" :class="activeView === 'prints' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'prints'">
+                    Cetak
                 </button>
-                <button class="min-h-11 rounded-lg text-sm font-black" :class="activeView === 'marketplace' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'marketplace'">
-                    Marketplace
+                <button class="min-h-11 rounded-lg text-xs font-black sm:text-sm" :class="activeView === 'marketplace' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'marketplace'">
+                    Template
                 </button>
-                <button class="min-h-11 rounded-lg text-sm font-black" :class="activeView === 'editor' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'editor'">
+                <button class="min-h-11 rounded-lg text-xs font-black sm:text-sm" :class="activeView === 'editor' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'editor'">
                     Editor
                 </button>
             </div>
@@ -547,9 +625,10 @@ onMounted(() => {
                         </div>
                         <span class="shrink-0 rounded-full bg-[#dbe1ff] px-3 py-1 text-xs font-black text-[#003ea8]">Terbaru</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-3 gap-2">
                         <button class="min-h-12 rounded-xl bg-[#004ac6] px-4 text-sm font-black text-white" type="button" @click="openGallery(latestSession)">Gallery</button>
                         <button class="min-h-12 rounded-xl border border-[#004ac6] px-4 text-sm font-black text-[#004ac6]" type="button" @click="downloadAsset(latestSession)">Download</button>
+                        <button class="min-h-12 rounded-xl border border-[#c3c6d7] px-4 text-sm font-black text-[#004ac6]" type="button" @click="openPrintRequest(latestSession)">Cetak</button>
                     </div>
                 </div>
             </section>
@@ -580,8 +659,9 @@ onMounted(() => {
                                     <span class="shrink-0 rounded-full bg-[#f3f3fe] px-2 py-1 text-[11px] font-black text-[#004ac6]">{{ uploadedSessionAssets(session).length }}</span>
                                 </div>
                                 <p class="mt-2 text-xs font-semibold text-[#434655]">{{ formatDate(session.started_at || session.created_at) }} - Frame {{ framedCount(session) }} - Original {{ originalCount(session) }}</p>
-                                <div class="mt-3 grid grid-cols-2 gap-2">
+                                <div class="mt-3 grid grid-cols-3 gap-2">
                                     <button class="min-h-10 rounded-lg bg-[#004ac6] text-xs font-black text-white" type="button" @click="openGallery(session)">Gallery</button>
+                                    <button class="min-h-10 rounded-lg border border-[#004ac6] text-xs font-black text-[#004ac6]" type="button" @click="openPrintRequest(session)">Cetak</button>
                                     <button class="min-h-10 rounded-lg border border-[#c3c6d7] text-xs font-black text-[#004ac6]" type="button" @click="selectedSession = session">Detail</button>
                                 </div>
                             </div>
@@ -597,9 +677,33 @@ onMounted(() => {
             </section>
 
             <section v-if="activeView === 'prints'">
+                <div class="mb-4 rounded-xl border border-[#c3c6d7] bg-white p-4 shadow-sm">
+                    <p class="text-xs font-bold uppercase tracking-wide text-[#737686]">Alur cetak foto</p>
+                    <div class="mt-3 grid gap-3 md:grid-cols-3">
+                        <div class="rounded-xl bg-[#f3f3fe] p-3">
+                            <div class="mb-2 flex size-9 items-center justify-center rounded-lg bg-white text-sm font-black text-[#004ac6]">1</div>
+                            <p class="text-sm font-black">Pilih foto</p>
+                            <p class="mt-1 text-xs leading-5 text-[#434655]">Buka session dan pilih foto yang mau dicetak.</p>
+                        </div>
+                        <div class="rounded-xl bg-[#f3f3fe] p-3">
+                            <div class="mb-2 flex size-9 items-center justify-center rounded-lg bg-white text-sm font-black text-[#004ac6]">2</div>
+                            <p class="text-sm font-black">Konfirmasi copy</p>
+                            <p class="mt-1 text-xs leading-5 text-[#434655]">Tentukan jumlah cetak sebelum request masuk cloud.</p>
+                        </div>
+                        <div class="rounded-xl bg-[#f3f3fe] p-3">
+                            <div class="mb-2 flex size-9 items-center justify-center rounded-lg bg-white text-sm font-black text-[#004ac6]">3</div>
+                            <p class="text-sm font-black">Ambil di booth</p>
+                            <p class="mt-1 text-xs leading-5 text-[#434655]">Station mengambil antrian dan status tampil di sini.</p>
+                        </div>
+                    </div>
+                    <button class="mt-4 min-h-12 w-full rounded-xl bg-[#004ac6] px-4 text-sm font-black text-white" type="button" @click="activeView = 'sessions'">
+                        Pilih Foto untuk Dicetak
+                    </button>
+                </div>
+
                 <div class="mb-3 flex items-center justify-between gap-3">
                     <div>
-                        <h2 class="text-xl font-black">Print Request</h2>
+                        <h2 class="text-xl font-black">Status Cetak</h2>
                         <p class="mt-1 text-xs font-semibold text-[#737686]">{{ activePrintRequests.length }} request aktif dari {{ printRequests.length }} total.</p>
                     </div>
                     <button class="min-h-10 rounded-xl border border-[#c3c6d7] bg-white px-3 text-xs font-black text-[#004ac6]" type="button" @click="fetchPrintRequests">Refresh</button>
@@ -610,17 +714,23 @@ onMounted(() => {
                 </div>
 
                 <div v-else-if="printRequests.length > 0" class="space-y-3">
-                    <article v-for="printRequest in printRequests" :key="printRequest.id" class="rounded-xl border border-[#c3c6d7] bg-white p-4 shadow-sm">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0">
-                                <p class="truncate text-base font-black">{{ printRequest.session_title || 'Photobooth Session' }}</p>
-                                <p class="mt-1 text-xs font-bold uppercase tracking-wide text-[#737686]">{{ printRequest.session_code || 'Session' }} - {{ printRequest.asset_type || 'asset' }}</p>
+                    <article v-for="printRequest in printRequests" :key="printRequest.id" class="overflow-hidden rounded-xl border border-[#c3c6d7] bg-white shadow-sm">
+                        <div class="border-b border-[#e1e2ed] p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="truncate text-base font-black">{{ printRequest.session_title || 'Photobooth Session' }}</p>
+                                    <p class="mt-1 text-xs font-bold uppercase tracking-wide text-[#737686]">{{ printRequest.session_code || 'Session' }} - {{ printRequest.asset_type || 'asset' }}</p>
+                                </div>
+                                <span class="shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase" :class="printStatusClass(printRequest.status)">
+                                    {{ printStatusLabel(printRequest.status) }}
+                                </span>
                             </div>
-                            <span class="shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase" :class="printRequest.status === 'printed' ? 'bg-green-100 text-[#10B981]' : printRequest.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-[#dbe1ff] text-[#003ea8]'">
-                                {{ printRequest.status }}
-                            </span>
+                            <p class="mt-3 rounded-xl p-3 text-xs font-semibold" :class="printRequest.last_error ? 'bg-red-50 text-red-700' : 'bg-[#eef4ff] text-[#003ea8]'">
+                                {{ printStatusDescription(printRequest) }}
+                            </p>
                         </div>
-                        <div class="mt-4 grid grid-cols-2 gap-3 text-xs font-bold text-[#434655] md:grid-cols-4">
+
+                        <div class="grid grid-cols-2 gap-3 p-4 text-xs font-bold text-[#434655] md:grid-cols-4">
                             <div class="rounded-xl bg-[#f3f3fe] p-3">
                                 <p class="text-[#737686]">Copies</p>
                                 <p class="mt-1 text-sm font-black text-[#191b23]">{{ printRequest.quantity }}</p>
@@ -638,18 +748,13 @@ onMounted(() => {
                                 <p class="mt-1 text-sm font-black text-[#191b23]">{{ formatDate(printRequest.created_at) }}</p>
                             </div>
                         </div>
-                        <p v-if="printRequest.last_error" class="mt-3 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700">{{ printRequest.last_error }}</p>
-                        <p v-else-if="printRequest.status === 'pending_operator'" class="mt-3 rounded-xl bg-[#eef4ff] p-3 text-xs font-semibold text-[#003ea8]">Menunggu station mengambil request cetak.</p>
-                        <p v-else-if="printRequest.status === 'claimed'" class="mt-3 rounded-xl bg-[#eef4ff] p-3 text-xs font-semibold text-[#003ea8]">Station sudah mengambil request ini.</p>
-                        <p v-else-if="printRequest.status === 'printing'" class="mt-3 rounded-xl bg-[#eef4ff] p-3 text-xs font-semibold text-[#003ea8]">Sedang dicetak oleh station.</p>
-                        <p v-else-if="printRequest.status === 'printed'" class="mt-3 rounded-xl bg-green-50 p-3 text-xs font-semibold text-green-700">Foto sudah selesai dicetak.</p>
                     </article>
                 </div>
 
                 <div v-else class="rounded-xl border border-[#c3c6d7] bg-white p-6 text-center shadow-sm">
-                    <div class="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-[#e1e2ed] text-2xl font-black text-[#737686]">PR</div>
-                    <h3 class="text-xl font-black">Belum ada print request</h3>
-                    <p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#434655]">Buka detail session, pilih foto, lalu tekan Print untuk membuat request cetak.</p>
+                    <img class="mx-auto mb-4 size-16 rounded-xl object-cover shadow-sm" :src="'/images/dafydio-booth-icon.png'" alt="Dafydio app icon">
+                    <h3 class="text-xl font-black">Belum ada request cetak</h3>
+                    <p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#434655]">Mulai dari tab Foto, pilih session, lalu tekan Cetak pada foto yang ingin kamu print.</p>
                 </div>
             </section>
 
@@ -783,7 +888,7 @@ onMounted(() => {
                         <button class="min-h-12 rounded-xl bg-[#004ac6] px-4 text-sm font-black text-white" type="button" @click="openGallery(selectedSession)">Buka Gallery</button>
                         <a class="flex min-h-12 items-center justify-center rounded-xl border border-[#25d366] px-4 text-sm font-black text-[#128c3a]" :href="shareGalleryUrl(selectedSession)" target="_blank" rel="noopener noreferrer">Share WA</a>
                         <a v-if="selectedSession.download_all_url" class="flex min-h-12 items-center justify-center rounded-xl border border-[#004ac6] px-4 text-sm font-black text-[#004ac6]" :href="selectedSession.download_all_url">Download Semua</a>
-                        <button class="min-h-12 rounded-xl border border-[#c3c6d7] px-4 text-sm font-black text-[#004ac6]" type="button" @click="requestPrint(selectedSession)">Request Print</button>
+                        <button class="min-h-12 rounded-xl border border-[#c3c6d7] px-4 text-sm font-black text-[#004ac6]" type="button" @click="openPrintRequest(selectedSession)">Cetak Foto</button>
                     </div>
 
                     <div class="mb-4 rounded-xl border border-[#c3c6d7] bg-[#f3f3fe] p-3">
@@ -810,8 +915,8 @@ onMounted(() => {
                                     <button class="min-h-9 rounded-lg bg-[#004ac6] px-3 text-xs font-black text-white disabled:opacity-60" type="button" :disabled="processingAssetId === asset.id" @click="downloadAsset(selectedSession, asset)">
                                         {{ processingAssetId === asset.id ? '...' : 'Download' }}
                                     </button>
-                                    <button class="min-h-9 rounded-lg border border-[#c3c6d7] px-3 text-xs font-black text-[#004ac6] disabled:opacity-60" type="button" :disabled="processingAssetId === asset.id" @click="requestPrint(selectedSession, asset)">
-                                        Print
+                                    <button class="min-h-9 rounded-lg border border-[#c3c6d7] px-3 text-xs font-black text-[#004ac6] disabled:opacity-60" type="button" :disabled="processingAssetId === asset.id" @click="openPrintRequest(selectedSession, asset)">
+                                        Cetak
                                     </button>
                                     <button class="min-h-9 rounded-lg border border-[#004ac6] px-3 text-xs font-black text-[#004ac6] disabled:opacity-60" type="button" :disabled="processingEditAssetId === asset.id || readyTemplates.length === 0" @click="createEditJob(selectedSession, asset)">
                                         {{ processingEditAssetId === asset.id ? '...' : 'Edit' }}
@@ -821,6 +926,53 @@ onMounted(() => {
                         </article>
                     </div>
                 </div>
+            </section>
+        </div>
+
+        <div v-if="printDraft" class="fixed inset-0 z-[60] bg-black/55 px-4 py-6 backdrop-blur-sm">
+            <section class="mx-auto flex max-h-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+                <header class="border-b border-[#c3c6d7] p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold uppercase tracking-wide text-[#737686]">Konfirmasi Cetak</p>
+                            <h2 class="mt-1 truncate text-xl font-black">{{ printDraft.session.title || 'Photobooth Session' }}</h2>
+                            <p class="mt-1 text-xs font-bold uppercase tracking-wide text-[#737686]">{{ printDraft.session.session_code }}</p>
+                        </div>
+                        <button class="min-h-10 rounded-xl bg-[#f3f3fe] px-3 text-xs font-black text-[#004ac6]" type="button" @click="closePrintRequest">Tutup</button>
+                    </div>
+                </header>
+
+                <div class="min-h-0 flex-1 overflow-y-auto p-4">
+                    <div class="overflow-hidden rounded-xl border border-[#c3c6d7] bg-[#f3f3fe]">
+                        <img v-if="printDraft.asset.file_url" class="max-h-[42vh] min-h-72 w-full object-contain" :src="printDraft.asset.file_url" :alt="printDraft.asset.station_asset_id || 'Foto cetak'">
+                        <div v-else class="flex min-h-72 items-center justify-center text-sm font-semibold text-[#737686]">Preview foto belum tersedia</div>
+                    </div>
+
+                    <div class="mt-4 grid gap-3 rounded-xl border border-[#c3c6d7] bg-white p-4">
+                        <div>
+                            <p class="text-sm font-black capitalize">{{ printDraft.asset.type || 'Foto' }}</p>
+                            <p class="mt-1 text-xs font-semibold text-[#737686]">{{ printDraft.asset.width && printDraft.asset.height ? `${printDraft.asset.width} x ${printDraft.asset.height}` : 'Resolusi tersimpan' }} - {{ formatBytes(printDraft.asset.size_bytes) }}</p>
+                        </div>
+
+                        <label class="block">
+                            <span class="text-xs font-bold uppercase tracking-wide text-[#737686]">Jumlah copy</span>
+                            <input v-model.number="printDraft.quantity" class="mt-2 min-h-12 w-full rounded-xl border border-[#c3c6d7] bg-white px-4 text-base font-black outline-none focus:border-[#004ac6]" max="20" min="1" type="number">
+                        </label>
+
+                        <div class="rounded-xl bg-[#eef4ff] p-3 text-xs font-semibold leading-5 text-[#003ea8]">
+                            Setelah dikirim, cloud akan menaruh request ini di antrian. Station akan mengambil request lewat polling, lalu statusnya muncul di tab Cetak.
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="grid gap-3 border-t border-[#c3c6d7] p-4 sm:grid-cols-2">
+                    <button class="min-h-12 rounded-xl border border-[#c3c6d7] px-4 text-sm font-black text-[#434655]" type="button" @click="closePrintRequest">
+                        Batal
+                    </button>
+                    <button class="min-h-12 rounded-xl bg-[#004ac6] px-4 text-sm font-black text-white disabled:opacity-60" type="button" :disabled="processingAssetId === printDraft.asset.id" @click="submitPrintDraft">
+                        {{ processingAssetId === printDraft.asset.id ? 'Mengirim...' : 'Kirim Request Cetak' }}
+                    </button>
+                </footer>
             </section>
         </div>
     </main>
