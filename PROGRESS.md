@@ -1728,3 +1728,24 @@ Keputusan:
 Verifikasi:
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
+
+## 2026-05-22 - Revisi Diagram Alur Tanpa Payload JSON
+Perubahan:
+- Merevisi SVG alur di `resources/js/Pages/Dashboard.vue` agar lebih dekat dengan contoh diagram Dafydio Booth.
+- Diagram kini menampilkan blok:
+  - Android Device.
+  - Photobooth Station API.
+  - Station Database.
+  - Cloud.
+- Menambahkan panah berlabel untuk create event, update event, create session, save/update, sync session, upload asset, dan station polling print request.
+- Menambahkan catatan source-of-truth bahwa event berada di Station DB.
+- Menambahkan catatan bahwa cloud tidak membuat event.
+- Tidak menampilkan panel payload JSON pada halaman index.
+
+Keputusan:
+- Diagram index dibuat sebagai penjelasan visual high-level untuk visitor/admin, bukan dokumentasi payload API.
+- Informasi teknis payload tetap berada di dokumen kontrak API, bukan di halaman utama.
+
+Verifikasi:
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
