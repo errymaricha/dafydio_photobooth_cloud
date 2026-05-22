@@ -94,4 +94,15 @@ class PublicSessionGalleryTest extends TestCase
                 ->where('assets.1.download_name', 'Dafydio-Photobooth-SES-NTRPXPBS-Original-01.jpg')
             );
     }
+
+    public function test_public_session_code_not_found_shows_custom_gallery_error_page(): void
+    {
+        $this->get('/SES-KODE-SALAH')
+            ->assertStatus(404)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Public/SessionNotFound')
+                ->where('sessionCode', 'SES-KODE-SALAH')
+                ->where('homeUrl', url('/'))
+            );
+    }
 }

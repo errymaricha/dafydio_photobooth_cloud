@@ -1833,3 +1833,26 @@ Keputusan:
 
 Verifikasi:
 - `npm run build` berhasil.
+
+## 2026-05-22 - Halaman Kode Gallery Salah
+Perubahan:
+- Mengubah `PublicSessionController::show()` agar kode gallery yang tidak ditemukan merender halaman Inertia custom dengan status HTTP 404.
+- Menambahkan halaman `resources/js/Pages/Public/SessionNotFound.vue`.
+- Halaman error menampilkan:
+  - pesan "Kode gallery salah".
+  - kode yang dimasukkan user.
+  - ilustrasi foto rusak dengan animasi ringan memakai `animejs`.
+  - tombol kembali ke halaman depan.
+  - tombol masuk customer.
+- `downloadAll()` tetap mengembalikan abort 404 biasa untuk request ZIP dengan kode yang salah.
+- Menambahkan test untuk memastikan kode gallery salah merender `Public/SessionNotFound` dengan status 404.
+
+Keputusan:
+- Public gallery yang salah tetap memakai status HTTP 404 agar benar secara web, tetapi tampilannya dibuat ramah untuk customer.
+- Halaman 404 gallery diberi `noindex,nofollow`.
+
+Verifikasi:
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan test --filter=PublicSessionGalleryTest` berhasil, 2 tests passed dengan 48 assertions.
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 58 tests passed dengan 512 assertions.

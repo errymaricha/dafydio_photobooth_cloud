@@ -10,15 +10,24 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use ZipArchive;
 
 class PublicSessionController extends Controller
 {
     public function __construct(private readonly CloudAssetUrlService $assetUrlService) {}
 
-    public function show(string $sessionCode): Response
+    public function show(string $sessionCode): Response|SymfonyResponse
     {
         $session = $this->findSession($sessionCode);
+
+        if (! $session) {
+            return Inertia::render('Public/SessionNotFound', [
+                'sessionCode' => $sessionCode,
+                'homeUrl' => url('/'),
+            ])->toResponse(request())->setStatusCode(404);
+        }
+
         $assets = $this->publicAssets($session, $sessionCode);
         $shareUrl = route('public.sessions.show', ['sessionCode' => $sessionCode]);
         $coverImageUrl = $assets->firstWhere('type', 'framed')['file_url']
@@ -56,6 +65,8 @@ class PublicSessionController extends Controller
         abort_unless(class_exists(ZipArchive::class), 503, 'ZIP download is not available on this server.');
 
         $session = $this->findSession($sessionCode);
+        abort_if(! $session, 404, 'Gallery code was not found.');
+
         $assets = $this->publicAssets($session, $sessionCode);
 
         abort_if($assets->isEmpty(), 404, 'No uploaded photos are available.');
@@ -95,14 +106,14 @@ class PublicSessionController extends Controller
         )->deleteFileAfterSend(true);
     }
 
-    private function findSession(string $sessionCode): CloudSession
+    private function findSession(string $sessionCode): ?CloudSession
     {
         return CloudSession::query()
             ->with(['assets', 'customer', 'station'])
             ->where('station_session_id', $sessionCode)
             ->orWhere('metadata->station_session->session_code', $sessionCode)
             ->latest()
-            ->firstOrFail();
+            ->first();
     }
 
     private function publicAssets(CloudSession $session, string $sessionCode): Collection
