@@ -190,12 +190,12 @@ onBeforeUnmount(() => {
 
                         <svg
                             class="mt-4 h-auto w-full"
-                            viewBox="0 0 960 560"
+                            viewBox="0 0 900 520"
                             role="img"
                             aria-labelledby="photobooth-flow-title photobooth-flow-desc"
                         >
                             <title id="photobooth-flow-title">Alur aplikasi Dafydio Photobooth</title>
-                            <desc id="photobooth-flow-desc">Diagram sederhana Android Device ke Station, Station Database, Cloud, lalu Customer dan Admin.</desc>
+                            <desc id="photobooth-flow-desc">Diagram sederhana Android Device ke Station lalu Cloud.</desc>
 
                             <defs>
                                 <marker id="arrow-blue" markerHeight="10" markerWidth="10" orient="auto" refX="9" refY="5">
@@ -209,87 +209,75 @@ onBeforeUnmount(() => {
                                 </filter>
                             </defs>
 
-                            <rect width="960" height="560" rx="28" fill="#f8faff" />
-                            <text x="480" y="48" text-anchor="middle" fill="#111827" font-size="30" font-weight="800">Alur Kerja Dafydio Booth</text>
-                            <text x="480" y="78" text-anchor="middle" fill="#434655" font-size="17">Capture di Android, proses di Station, arsip dan portal di Cloud.</text>
+                            <rect width="900" height="520" rx="28" fill="#f8faff" />
+                            <text x="450" y="48" text-anchor="middle" fill="#111827" font-size="30" font-weight="800">Alur Kerja Dafydio Booth</text>
+                            <text x="450" y="78" text-anchor="middle" fill="#434655" font-size="17">Android untuk capture, Station untuk proses lokal, Cloud untuk gallery dan arsip.</text>
 
                             <g filter="url(#soft-shadow)">
-                                <rect x="48" y="130" width="180" height="190" rx="22" fill="#ffffff" stroke="#004ac6" stroke-width="3" />
-                                <circle cx="138" cy="184" r="32" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
-                                <rect x="124" y="160" width="28" height="50" rx="8" fill="#004ac6" />
-                                <circle cx="138" cy="185" r="9" fill="#ffffff" />
-                                <text x="138" y="247" text-anchor="middle" fill="#191b23" font-size="22" font-weight="800">1. Android</text>
-                                <text x="138" y="276" text-anchor="middle" fill="#434655" font-size="15">Capture foto</text>
-                                <text x="138" y="298" text-anchor="middle" fill="#434655" font-size="15">dan mulai event</text>
+                                <rect x="48" y="128" width="220" height="210" rx="24" fill="#ffffff" stroke="#004ac6" stroke-width="3" />
+                                <circle cx="158" cy="184" r="34" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
+                                <rect x="143" y="158" width="30" height="54" rx="8" fill="#004ac6" />
+                                <circle cx="158" cy="185" r="9" fill="#ffffff" />
+                                <text x="158" y="250" text-anchor="middle" fill="#191b23" font-size="23" font-weight="800">1. Android</text>
+                                <text x="158" y="280" text-anchor="middle" fill="#434655" font-size="16">Capture foto</text>
+                                <text x="158" y="304" text-anchor="middle" fill="#434655" font-size="16">dan mulai event</text>
                             </g>
 
                             <g filter="url(#soft-shadow)">
-                                <rect x="280" y="130" width="180" height="190" rx="22" fill="#ffffff" stroke="#004ac6" stroke-width="3" />
-                                <circle cx="370" cy="184" r="32" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
-                                <rect x="348" y="170" width="44" height="12" rx="6" fill="#004ac6" />
-                                <rect x="348" y="190" width="44" height="12" rx="6" fill="#004ac6" opacity="0.65" />
-                                <text x="370" y="247" text-anchor="middle" fill="#191b23" font-size="22" font-weight="800">2. Station</text>
-                                <text x="370" y="276" text-anchor="middle" fill="#434655" font-size="15">Render lokal</text>
-                                <text x="370" y="298" text-anchor="middle" fill="#434655" font-size="15">dan printer queue</text>
+                                <rect x="340" y="128" width="220" height="210" rx="24" fill="#ffffff" stroke="#004ac6" stroke-width="3" />
+                                <circle cx="450" cy="184" r="34" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
+                                <rect x="426" y="168" width="48" height="12" rx="6" fill="#004ac6" />
+                                <rect x="426" y="188" width="48" height="12" rx="6" fill="#004ac6" opacity="0.65" />
+                                <ellipse cx="450" cy="210" rx="25" ry="7" fill="#0b6b21" opacity="0.82" />
+                                <text x="450" y="250" text-anchor="middle" fill="#191b23" font-size="23" font-weight="800">2. Station</text>
+                                <text x="450" y="280" text-anchor="middle" fill="#434655" font-size="16">Render, local DB,</text>
+                                <text x="450" y="304" text-anchor="middle" fill="#434655" font-size="16">dan printer queue</text>
                             </g>
 
                             <g filter="url(#soft-shadow)">
-                                <rect x="512" y="130" width="180" height="190" rx="22" fill="#f8fff8" stroke="#0b6b21" stroke-width="3" />
-                                <circle cx="602" cy="184" r="32" fill="#ddf8dd" stroke="#0b6b21" stroke-width="3" />
-                                <ellipse cx="602" cy="176" rx="24" ry="8" fill="#62c462" />
-                                <path d="M578 176 V199 C578 205 589 211 602 211 C615 211 626 205 626 199 V176" fill="#62c462" stroke="#0b6b21" stroke-width="3" />
-                                <text x="602" y="247" text-anchor="middle" fill="#191b23" font-size="22" font-weight="800">3. Database</text>
-                                <text x="602" y="276" text-anchor="middle" fill="#434655" font-size="15">Event dan session</text>
-                                <text x="602" y="298" text-anchor="middle" fill="#434655" font-size="15">tersimpan lokal</text>
+                                <rect x="632" y="128" width="220" height="210" rx="24" fill="#ffffff" stroke="#004ac6" stroke-width="3" />
+                                <circle cx="742" cy="184" r="34" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
+                                <path d="M719 190 H764 C775 190 783 182 783 172 C783 164 776 157 767 156 C763 145 752 139 740 142 C730 144 724 151 721 160 C710 162 703 169 703 178 C703 186 710 190 719 190 Z" fill="#004ac6" />
+                                <text x="742" y="250" text-anchor="middle" fill="#191b23" font-size="23" font-weight="800">3. Cloud</text>
+                                <text x="742" y="280" text-anchor="middle" fill="#434655" font-size="16">Gallery, arsip,</text>
+                                <text x="742" y="304" text-anchor="middle" fill="#434655" font-size="16">dan admin portal</text>
                             </g>
 
-                            <g filter="url(#soft-shadow)">
-                                <rect x="744" y="130" width="180" height="190" rx="22" fill="#ffffff" stroke="#004ac6" stroke-width="3" />
-                                <circle cx="834" cy="184" r="32" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
-                                <path d="M812 190 H852 C862 190 870 183 870 173 C870 164 864 158 855 157 C851 146 842 140 830 143 C821 145 815 151 812 160 C802 162 795 169 795 178 C795 186 803 190 812 190 Z" fill="#004ac6" />
-                                <text x="834" y="247" text-anchor="middle" fill="#191b23" font-size="22" font-weight="800">4. Cloud</text>
-                                <text x="834" y="276" text-anchor="middle" fill="#434655" font-size="15">Gallery, arsip,</text>
-                                <text x="834" y="298" text-anchor="middle" fill="#434655" font-size="15">admin portal</text>
-                            </g>
-
-                            <path data-anime="flow-line" pathLength="34" d="M228 225 H278" fill="none" stroke="#004ac6" stroke-width="6" stroke-linecap="round" stroke-dasharray="12 8" marker-end="url(#arrow-blue)" />
-                            <path data-anime="flow-line" pathLength="34" d="M460 225 H510" fill="none" stroke="#0b6b21" stroke-width="6" stroke-linecap="round" stroke-dasharray="12 8" marker-end="url(#arrow-green)" />
-                            <path data-anime="flow-line" pathLength="34" d="M692 225 H742" fill="none" stroke="#004ac6" stroke-width="6" stroke-linecap="round" stroke-dasharray="12 8" marker-end="url(#arrow-blue)" />
-                            <text x="253" y="205" text-anchor="middle" fill="#003ea8" font-size="14" font-weight="800">event/session</text>
-                            <text x="485" y="205" text-anchor="middle" fill="#0b6b21" font-size="14" font-weight="800">save</text>
-                            <text x="717" y="205" text-anchor="middle" fill="#003ea8" font-size="14" font-weight="800">sync</text>
+                            <path data-anime="flow-line" pathLength="34" d="M268 232 H338" fill="none" stroke="#004ac6" stroke-width="6" stroke-linecap="round" stroke-dasharray="12 8" marker-end="url(#arrow-blue)" />
+                            <path data-anime="flow-line" pathLength="34" d="M560 232 H630" fill="none" stroke="#004ac6" stroke-width="6" stroke-linecap="round" stroke-dasharray="12 8" marker-end="url(#arrow-blue)" />
+                            <text x="303" y="209" text-anchor="middle" fill="#003ea8" font-size="15" font-weight="800">event/session</text>
+                            <text x="595" y="209" text-anchor="middle" fill="#003ea8" font-size="15" font-weight="800">sync asset</text>
 
                             <g>
-                                <rect x="48" y="368" width="270" height="94" rx="18" fill="#ffffff" stroke="#0b6b21" stroke-width="2" />
-                                <circle cx="86" cy="415" r="20" fill="#0b6b21" />
-                                <path d="M78 416 L84 424 L96 405" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-                                <text x="190" y="407" text-anchor="middle" fill="#0b6b21" font-size="18" font-weight="800">Source of truth</text>
-                                <text x="190" y="434" text-anchor="middle" fill="#0b6b21" font-size="15" font-weight="700">Event utama ada di Station DB</text>
+                                <rect x="58" y="384" width="240" height="84" rx="18" fill="#ffffff" stroke="#0b6b21" stroke-width="2" />
+                                <circle cx="93" cy="426" r="18" fill="#0b6b21" />
+                                <path d="M86 427 L92 435 L103 416" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                                <text x="178" y="419" text-anchor="middle" fill="#0b6b21" font-size="17" font-weight="800">Source of truth</text>
+                                <text x="178" y="443" text-anchor="middle" fill="#0b6b21" font-size="14" font-weight="700">Event utama ada di Station</text>
                             </g>
 
                             <g>
-                                <rect x="345" y="368" width="270" height="94" rx="18" fill="#ffffff" stroke="#004ac6" stroke-width="2" />
-                                <circle cx="383" cy="415" r="20" fill="#004ac6" />
-                                <text x="383" y="423" text-anchor="middle" fill="#ffffff" font-size="25" font-weight="900">!</text>
-                                <text x="480" y="407" text-anchor="middle" fill="#003ea8" font-size="18" font-weight="800">Cloud bukan printer</text>
-                                <text x="480" y="434" text-anchor="middle" fill="#003ea8" font-size="15" font-weight="700">Station tetap cetak fisik</text>
+                                <rect x="330" y="384" width="240" height="84" rx="18" fill="#ffffff" stroke="#004ac6" stroke-width="2" />
+                                <circle cx="365" cy="426" r="18" fill="#004ac6" />
+                                <text x="365" y="434" text-anchor="middle" fill="#ffffff" font-size="24" font-weight="900">!</text>
+                                <text x="450" y="419" text-anchor="middle" fill="#003ea8" font-size="17" font-weight="800">Cloud bukan printer</text>
+                                <text x="450" y="443" text-anchor="middle" fill="#003ea8" font-size="14" font-weight="700">Station tetap cetak fisik</text>
                             </g>
 
                             <g>
-                                <rect x="642" y="368" width="270" height="94" rx="18" fill="#ffffff" stroke="#8B5CF6" stroke-width="2" />
-                                <circle cx="680" cy="415" r="20" fill="#8B5CF6" />
-                                <path d="M670 416 H690 M681 406 L691 416 L681 426" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-                                <text x="777" y="407" text-anchor="middle" fill="#5b21b6" font-size="18" font-weight="800">Link pendek</text>
-                                <text x="777" y="434" text-anchor="middle" fill="#5b21b6" font-size="15" font-weight="700">Gallery mudah dibagikan</text>
+                                <rect x="602" y="384" width="240" height="84" rx="18" fill="#ffffff" stroke="#8B5CF6" stroke-width="2" />
+                                <circle cx="637" cy="426" r="18" fill="#8B5CF6" />
+                                <path d="M628 426 H646 M638 417 L648 426 L638 435" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                                <text x="722" y="419" text-anchor="middle" fill="#5b21b6" font-size="17" font-weight="800">Link pendek</text>
+                                <text x="722" y="443" text-anchor="middle" fill="#5b21b6" font-size="14" font-weight="700">Gallery mudah dibagikan</text>
                             </g>
 
-                            <path data-anime="flow-line" pathLength="34" d="M834 320 V344 H602 V322" fill="none" stroke="#8B5CF6" stroke-width="4" stroke-dasharray="10 8" marker-end="url(#arrow-green)" opacity="0.95" />
-                            <text x="718" y="342" text-anchor="middle" fill="#5b21b6" font-size="14" font-weight="800">print request dipolling station</text>
+                            <path data-anime="flow-line" pathLength="34" d="M742 338 V358 H450 V340" fill="none" stroke="#8B5CF6" stroke-width="4" stroke-dasharray="10 8" marker-end="url(#arrow-green)" opacity="0.95" />
+                            <text x="596" y="356" text-anchor="middle" fill="#5b21b6" font-size="14" font-weight="800">print request dipolling station</text>
 
-                            <circle data-anime="flow-pulse" cx="253" cy="225" r="8" fill="#004ac6" />
-                            <circle data-anime="flow-pulse" cx="485" cy="225" r="8" fill="#0b6b21" />
-                            <circle data-anime="flow-pulse" cx="717" cy="225" r="8" fill="#8B5CF6" />
-                            <circle data-anime="flow-pulse" cx="718" cy="344" r="8" fill="#fea619" />
+                            <circle data-anime="flow-pulse" cx="303" cy="232" r="8" fill="#004ac6" />
+                            <circle data-anime="flow-pulse" cx="595" cy="232" r="8" fill="#8B5CF6" />
+                            <circle data-anime="flow-pulse" cx="596" cy="358" r="8" fill="#fea619" />
                         </svg>
                     </section>
 

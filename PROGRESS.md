@@ -1768,3 +1768,21 @@ Keputusan:
 Verifikasi:
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
+
+## 2026-05-22 - Diagram Index Tiga Aktor
+Perubahan:
+- Mengubah diagram utama di `resources/js/Pages/Dashboard.vue` agar hanya menampilkan tiga aktor besar:
+  - Android.
+  - Station.
+  - Cloud.
+- Menghapus kotak Database sebagai aktor utama di diagram.
+- Memindahkan konteks local database ke dalam deskripsi Station: render, local DB, dan printer queue.
+- Menyesuaikan panah menjadi Android -> Station -> Cloud, plus jalur balik print request dari Cloud ke Station.
+
+Keputusan:
+- Diagram index harus sederhana dan langsung menjawab gambaran produk untuk user umum.
+- Detail Station Database tetap penting, tetapi tidak ditampilkan sebagai aktor utama supaya diagram tidak membingungkan.
+
+Verifikasi:
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
