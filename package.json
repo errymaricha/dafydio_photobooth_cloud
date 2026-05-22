@@ -17,6 +17,7 @@
     "dependencies": {
         "@inertiajs/vue3": "^3.1.1",
         "@vitejs/plugin-vue": "^6.0.6",
+        "animejs": "^4.4.1",
         "vue": "^3.5.34"
     }
 }

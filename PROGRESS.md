@@ -1689,3 +1689,22 @@ Verifikasi:
 - `npm run build` sempat gagal karena path icon absolut di template Vue dibaca Vite sebagai import.
 - Path icon diperbaiki menjadi binding runtime `:src="'/images/dafydio-booth-icon.png'"`.
 - `npm run build` berhasil setelah perbaikan.
+
+## 2026-05-22 - Dekorasi Anime.js Halaman Index
+Perubahan:
+- Menambahkan dependency `animejs` untuk animasi dekoratif halaman root `/`.
+- Memperbarui `resources/js/Pages/Dashboard.vue` dengan animasi ringan:
+  - garis scan transparan di background.
+  - node kecil bergerak halus.
+  - elemen konten masuk bertahap saat halaman dimuat.
+- Menambahkan guard `prefers-reduced-motion` agar animasi tidak berjalan untuk user yang memilih reduced motion.
+- Membersihkan animasi saat komponen dilepas dengan `revert()`.
+
+Keputusan:
+- Animasi hanya dipasang di halaman index, bukan global layout.
+- Dekorasi dibuat non-interaktif (`pointer-events-none`) dan tidak menutupi alur utama login/gallery.
+- Tidak memakai bokeh/orb dekoratif; bentuk dekorasi memakai garis, kotak, dan node kecil agar tetap sesuai arah UI Dafydio.
+
+Verifikasi:
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
