@@ -1669,3 +1669,23 @@ Verifikasi:
 - `php artisan route:list --except-vendor --path=api/station` berhasil.
 - `php artisan route:list --except-vendor --path=api/webhooks` berhasil.
 - `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
+
+## 2026-05-22 15:16 - Pembaruan Halaman Index Root URL
+Perubahan:
+- Memperbarui `resources/js/Pages/Dashboard.vue` sebagai halaman index `/` untuk Dafydio Photobooth Cloud.
+- Menambahkan akses cepat ke login customer dan admin melalui `/login?mode=customer` dan `/login?mode=admin`.
+- Menambahkan form buka public gallery memakai kode session pendek seperti `SES-LM7CMO5G`.
+- Menambahkan ringkasan area produk: Customer Portal, Admin Console, Public Gallery, dan Station API.
+- Menambahkan status kesiapan cloud untuk database, auth, print flow, dan storage.
+- Menambahkan title dan description meta melalui Inertia `Head`.
+
+Keputusan:
+- Root URL dibuat sebagai access hub operasional, bukan landing page marketing.
+- URL gallery pendek tetap menjadi jalur utama untuk share WhatsApp.
+- R2/S3 tetap disebut sebagai struktur yang disiapkan, belum diaktifkan sebagai default.
+
+Verifikasi:
+- `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
+- `npm run build` sempat gagal karena path icon absolut di template Vue dibaca Vite sebagai import.
+- Path icon diperbaiki menjadi binding runtime `:src="'/images/dafydio-booth-icon.png'"`.
+- `npm run build` berhasil setelah perbaikan.
