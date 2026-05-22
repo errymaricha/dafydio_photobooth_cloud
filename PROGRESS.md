@@ -1801,3 +1801,25 @@ Keputusan:
 Verifikasi:
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
+
+## 2026-05-22 - Adaptasi Template Homepage Flow-First
+Perubahan:
+- Mengadaptasikan referensi `dafydio_photobooth_index_html.html` ke halaman Inertia `resources/js/Pages/Dashboard.vue`.
+- Struktur homepage kini terdiri dari:
+  - sticky header dengan brand, admin link, dan status online.
+  - hero panel untuk pesan utama dan CTA customer/admin.
+  - panel buka gallery public dengan kode session pendek.
+  - flow actor-card Android -> Station -> Cloud.
+  - kartu akses Customer Portal, Station Operation, dan Admin Console.
+  - grid fitur unggulan cloud.
+  - footer ringkas.
+- Mengganti pendekatan diagram SVG besar menjadi actor-card layout agar lebih mudah dipahami dan lebih responsif.
+
+Keputusan:
+- Tidak memakai CDN, Google Fonts, atau script eksternal dari template referensi.
+- Tidak menampilkan payload JSON di homepage.
+- Flow utama tetap menjaga boundary: Android capture, Station proses lokal/cetak fisik, Cloud archive/portal/sync coordinator.
+
+Verifikasi:
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 57 tests passed dengan 500 assertions.

@@ -10,22 +10,54 @@ const runningAnimations = [];
 const sanitizedSessionCode = computed(() => sessionCode.value.trim().toUpperCase());
 const publicGalleryUrl = computed(() => (sanitizedSessionCode.value ? `/${sanitizedSessionCode.value}` : '#'));
 
-const advantageCards = [
+const flowActors = [
     {
         label: 'Android',
-        title: 'Capture cepat di lokasi event',
-        body: 'Perangkat Android fokus mengambil foto dan menjaga workflow operator tetap sederhana.',
+        subtitle: 'Capture & event launcher',
+        title: 'Android Device',
+        body: [
+            'Capture foto dari device Android.',
+            'Mulai event dari aplikasi photobooth.',
+            'Kirim session dan hasil capture ke station.',
+        ],
     },
     {
         label: 'Station',
-        title: 'Render lokal dan print fisik',
-        body: 'Station menangani session lokal, queue printer, retry, dan polling print request dari cloud.',
+        subtitle: 'Local source of truth',
+        title: 'Photobooth Station',
+        body: [
+            'Render lokal untuk preview dan hasil akhir.',
+            'Menyimpan local database event.',
+            'Mengelola printer queue dan cetak fisik.',
+            'Polling print request dari cloud.',
+        ],
+        highlighted: true,
     },
     {
         label: 'Cloud',
-        title: 'Gallery, arsip, dan share link pendek',
-        body: 'Cloud menyimpan asset, login customer, public gallery, admin console, dan koordinasi print request.',
+        subtitle: 'Archive & sync coordinator',
+        title: 'Cloud Portal',
+        body: [
+            'Gallery customer dan link pendek WhatsApp.',
+            'Arsip foto dan asset session.',
+            'Admin console, billing, subscription, dan sync log.',
+        ],
     },
+];
+
+const accessCards = [
+    ['Customer Portal', 'Cepat, mobile-first, mudah dibuka dari WhatsApp untuk gallery, download foto, dan request cetak ulang.'],
+    ['Station Operation', 'Station tetap bisa bekerja lokal untuk render, database, printer queue, dan cetak fisik.'],
+    ['Admin Console', 'Owner/admin bisa monitoring station, customer, billing, template, sync log, dan arsip dalam satu dashboard.'],
+];
+
+const featureCards = [
+    ['Gallery Public Link', 'Customer bisa buka foto lewat URL pendek seperti /SES-XXXX.'],
+    ['WhatsApp Login', 'Customer masuk memakai nomor WhatsApp dan password dari station.'],
+    ['Download Foto', 'Original dan framed photo bisa diakses dari portal.'],
+    ['Print Request', 'Customer bisa request cetak ulang, station akan polling request.'],
+    ['Admin Dashboard', 'Tenant/admin bisa kelola station, customer, session, billing, dan sync log.'],
+    ['Cloud Archive', 'Session dan asset tersimpan sebagai arsip cloud yang mudah dicari.'],
 ];
 
 const readinessItems = [
@@ -81,6 +113,14 @@ onMounted(() => {
             loop: true,
             ease: 'inOutSine',
         }),
+        animate(pageRoot.value.querySelectorAll('[data-anime="arrow"]'), {
+            translateX: [0, 6],
+            duration: 920,
+            delay: stagger(160),
+            alternate: true,
+            loop: true,
+            ease: 'inOutSine',
+        }),
     );
 });
 
@@ -108,188 +148,198 @@ onBeforeUnmount(() => {
         </div>
 
         <section class="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-            <header data-anime="card" class="flex items-center justify-between gap-4">
+            <header data-anime="card" class="sticky top-0 z-30 -mx-4 flex items-center justify-between gap-4 border-b border-[#c3c6d7]/70 bg-[#F8FAFC]/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
                 <Link class="flex min-w-0 items-center gap-3" href="/">
                     <img class="size-12 rounded-xl border border-[#c3c6d7] object-cover shadow-sm" :src="'/images/dafydio-booth-icon.png'" alt="Dafydio app icon">
                     <div class="min-w-0">
                         <p class="text-xs font-bold uppercase tracking-wide text-[#004ac6]">Dafydio Cloud</p>
-                        <p class="truncate text-lg font-bold sm:text-xl">Photobooth Portal</p>
+                        <p class="truncate text-lg font-bold sm:text-xl">Customer portal, archive, station sync</p>
                     </div>
                 </Link>
-                <div class="flex shrink-0 items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2">
-                    <span class="size-2 rounded-full bg-emerald-500"></span>
-                    <span class="text-xs font-semibold text-emerald-900">Online</span>
+                <div class="flex shrink-0 items-center gap-2">
+                    <Link class="hidden min-h-9 items-center rounded-full border border-[#c3c6d7] bg-white px-3 text-xs font-extrabold text-[#004ac6] sm:inline-flex" href="/login?mode=admin">
+                        Admin
+                    </Link>
+                    <div class="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2">
+                        <span class="size-2 rounded-full bg-emerald-500"></span>
+                        <span class="text-xs font-semibold text-emerald-900">Online</span>
+                    </div>
                 </div>
             </header>
 
-            <section class="flex flex-1 flex-col gap-8 py-8 lg:py-10">
-                <div class="max-w-3xl">
-                    <div data-anime="card" class="inline-flex items-center rounded-full border border-[#c3c6d7] bg-white px-3 py-1.5 text-xs font-semibold text-[#434655] shadow-sm">
-                        Customer gallery, admin console, station sync
+            <section class="grid gap-5 py-8 lg:grid-cols-[1fr_360px] lg:py-10">
+                <div data-anime="card" class="rounded-xl border border-[#c3c6d7]/80 bg-white/95 p-6 shadow-sm sm:p-8">
+                    <div class="inline-flex items-center rounded-full border border-[#d8e5ff] bg-[#eef4ff] px-3 py-1.5 text-xs font-extrabold text-[#004ac6]">
+                        Flow-first cloud portal
                     </div>
-                    <h1 data-anime="card" class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-normal text-[#191b23] sm:text-5xl">
-                        Portal utama Dafydio Photobooth Cloud.
+                    <h1 class="mt-5 max-w-4xl text-4xl font-black leading-tight tracking-normal text-[#191b23] sm:text-6xl">
+                        Portal Cloud untuk Dafydio Photobooth
                     </h1>
-                    <p data-anime="card" class="mt-4 max-w-2xl text-base leading-7 text-[#434655]">
-                        Buka gallery customer dari kode session, masuk ke portal WhatsApp, atau kelola operasional tenant dan station dari satu halaman.
+                    <p class="mt-5 max-w-3xl text-base leading-8 text-[#434655]">
+                        Akses gallery, download foto, request cetak ulang, dan kelola station photobooth dari satu portal cloud. Sistem ini menghubungkan Android Device, Photobooth Station, dan Cloud tanpa mengambil alih proses cetak lokal.
                     </p>
 
-                    <div data-anime="card" class="mt-6 grid gap-3 sm:grid-cols-2">
-                        <Link
-                            class="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#004ac6] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#2563eb] active:scale-[0.99]"
-                            href="/login?mode=customer"
-                        >
+                    <div class="mt-6 grid gap-3 sm:grid-cols-2 md:max-w-xl">
+                        <Link class="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#004ac6] px-5 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#2563eb] active:scale-[0.99]" href="/login?mode=customer">
                             Masuk Customer
                         </Link>
-                        <Link
-                            class="inline-flex min-h-12 items-center justify-center rounded-lg border border-[#c3c6d7] bg-white px-5 text-sm font-bold text-[#191b23] shadow-sm transition hover:bg-[#f3f3fe] active:scale-[0.99]"
-                            href="/login?mode=admin"
-                        >
+                        <Link class="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#b8cdf8] bg-white px-5 text-sm font-extrabold text-[#004ac6] shadow-sm transition hover:bg-[#f3f3fe] active:scale-[0.99]" href="/login?mode=admin">
                             Masuk Admin
                         </Link>
                     </div>
-
-                    <form data-anime="card" class="mt-6 rounded-xl border border-[#c3c6d7] bg-white p-4 shadow-sm" @submit.prevent>
-                        <label class="text-xs font-bold uppercase tracking-wide text-[#434655]" for="session-code">Buka gallery public</label>
-                        <div class="mt-3 flex flex-col gap-3 sm:flex-row">
-                            <input
-                                id="session-code"
-                                v-model="sessionCode"
-                                class="min-h-12 flex-1 rounded-lg border-[#c3c6d7] bg-[#f3f3fe] text-sm font-semibold uppercase text-[#191b23] placeholder:normal-case placeholder:text-[#737686] focus:border-[#004ac6] focus:ring-[#004ac6]"
-                                inputmode="text"
-                                placeholder="Contoh: SES-LM7CMO5G"
-                                type="text"
-                            >
-                            <Link
-                                :class="[
-                                    'inline-flex min-h-12 items-center justify-center rounded-lg px-5 text-sm font-bold transition',
-                                    sanitizedSessionCode
-                                        ? 'bg-[#191b23] text-white hover:bg-[#2e3039]'
-                                        : 'pointer-events-none bg-[#e1e2ed] text-[#737686]',
-                                ]"
-                                :href="publicGalleryUrl"
-                            >
-                                Buka Gallery
-                            </Link>
-                        </div>
-                        <p class="mt-3 text-xs leading-5 text-[#737686]">
-                            Pakai URL pendek seperti <span class="font-semibold text-[#191b23]">/SES-LM7CMO5G</span> untuk share WhatsApp yang lebih rapi.
-                        </p>
-                    </form>
                 </div>
 
-                <div class="grid gap-4 md:grid-cols-3">
-                    <section data-anime="card" class="rounded-xl border border-[#c3c6d7] bg-white p-4 shadow-sm md:col-span-3">
-                        <div class="flex items-start justify-between gap-3">
-                            <div>
-                                <p class="text-xs font-bold uppercase tracking-wide text-[#004ac6]">Alur Photobooth</p>
-                                <h2 class="mt-2 text-xl font-bold leading-snug">Android, Station, dan Cloud bekerja sesuai perannya.</h2>
-                            </div>
-                            <span class="hidden rounded-full bg-[#dbe1ff] px-3 py-1 text-xs font-bold text-[#003ea8] sm:inline-flex">Live Sync</span>
-                        </div>
-
-                        <svg
-                            class="mt-4 h-auto w-full"
-                            viewBox="0 0 900 520"
-                            role="img"
-                            aria-labelledby="photobooth-flow-title photobooth-flow-desc"
+                <aside data-anime="card" class="rounded-xl border border-[#c3c6d7]/80 bg-white/95 p-5 shadow-sm">
+                    <h2 class="text-lg font-extrabold">Buka Gallery Public</h2>
+                    <p class="mt-2 text-sm leading-6 text-[#434655]">
+                        Masukkan kode session untuk membuka gallery customer dari link pendek.
+                    </p>
+                    <form class="mt-4 space-y-3" @submit.prevent>
+                        <label class="text-xs font-extrabold uppercase tracking-wide text-[#434655]" for="session-code">Kode Gallery</label>
+                        <input
+                            id="session-code"
+                            v-model="sessionCode"
+                            class="min-h-12 w-full rounded-xl border-[#c3c6d7] bg-white text-sm font-bold uppercase text-[#191b23] placeholder:normal-case placeholder:text-[#737686] focus:border-[#004ac6] focus:ring-[#004ac6]"
+                            inputmode="text"
+                            placeholder="Contoh: SES-LM7CMO5G"
+                            type="text"
                         >
-                            <title id="photobooth-flow-title">Alur aplikasi Dafydio Photobooth</title>
-                            <desc id="photobooth-flow-desc">Diagram sederhana Android Device ke Station lalu Cloud.</desc>
+                        <Link
+                            :class="[
+                                'inline-flex min-h-12 w-full items-center justify-center rounded-xl px-5 text-sm font-extrabold transition',
+                                sanitizedSessionCode
+                                    ? 'bg-[#004ac6] text-white hover:bg-[#2563eb]'
+                                    : 'pointer-events-none bg-[#e1e2ed] text-[#737686]',
+                            ]"
+                            :href="publicGalleryUrl"
+                        >
+                            Buka Gallery
+                        </Link>
+                    </form>
+                    <p class="mt-3 text-xs leading-5 text-[#737686]">
+                        Gunakan URL pendek untuk share WhatsApp yang lebih rapi.
+                    </p>
+                    <div class="mt-4 space-y-2 border-t border-[#c3c6d7]/70 pt-4">
+                        <div class="flex items-center justify-between gap-3 text-xs font-bold text-[#434655]">
+                            <span>Gallery Link</span>
+                            <span class="rounded-full bg-[#eef4ff] px-2 py-1 text-[#004ac6]">/SES-XXXX</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-3 text-xs font-bold text-[#434655]">
+                            <span>Login Customer</span>
+                            <span class="rounded-full bg-[#eef4ff] px-2 py-1 text-[#004ac6]">WhatsApp</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-3 text-xs font-bold text-[#434655]">
+                            <span>Print Request</span>
+                            <span class="rounded-full bg-[#eef4ff] px-2 py-1 text-[#004ac6]">Polling</span>
+                        </div>
+                    </div>
+                </aside>
+            </section>
 
-                            <defs>
-                                <marker id="arrow-blue" markerHeight="10" markerWidth="10" orient="auto" refX="9" refY="5">
-                                    <path d="M0 0 L10 5 L0 10 Z" fill="#004ac6" />
-                                </marker>
-                                <marker id="arrow-green" markerHeight="10" markerWidth="10" orient="auto" refX="9" refY="5">
-                                    <path d="M0 0 L10 5 L0 10 Z" fill="#0b6b21" />
-                                </marker>
-                                <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
-                                    <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#00174b" flood-opacity="0.12" />
-                                </filter>
-                            </defs>
+            <section class="py-6" id="flow">
+                <div data-anime="card" class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h2 class="text-3xl font-black tracking-normal text-[#191b23]">Diagram utama: Android -> Station -> Cloud</h2>
+                        <p class="mt-2 max-w-3xl text-sm leading-7 text-[#434655]">
+                            Dibuat flow-first supaya operator, admin, dan customer paham posisi cloud dalam beberapa detik.
+                        </p>
+                    </div>
+                    <div class="inline-flex w-fit rounded-full border border-[#d8e5ff] bg-[#eef4ff] px-3 py-2 text-xs font-extrabold text-[#004ac6]">
+                        Station tetap pusat event
+                    </div>
+                </div>
 
-                            <rect width="900" height="520" rx="28" fill="#f8faff" />
-                            <text x="450" y="48" text-anchor="middle" fill="#111827" font-size="30" font-weight="800">Alur Kerja Dafydio Booth</text>
-                            <text x="450" y="78" text-anchor="middle" fill="#434655" font-size="17">Android untuk capture, Station untuk proses lokal, Cloud untuk gallery dan arsip.</text>
+                <div data-anime="card" class="rounded-xl border border-[#c3c6d7]/80 bg-white p-5 shadow-sm">
+                    <div class="grid items-stretch gap-3 lg:grid-cols-[1fr_56px_1.12fr_56px_1fr]">
+                        <template v-for="(actor, index) in flowActors" :key="actor.label">
+                            <article
+                                :class="[
+                                    'flex min-h-80 flex-col rounded-xl border bg-white p-5',
+                                    actor.highlighted ? 'border-[#004ac6]/50 shadow-inner shadow-[#004ac6]/5' : 'border-[#c3c6d7]/80',
+                                ]"
+                            >
+                                <div class="mb-4 flex items-center gap-3 border-b border-[#c3c6d7]/60 pb-4">
+                                    <div class="grid size-11 shrink-0 place-items-center rounded-xl bg-[#004ac6] text-white">
+                                        <svg v-if="actor.label === 'Android'" class="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <rect x="7" y="3" width="10" height="18" rx="2" stroke="currentColor" stroke-width="2" />
+                                            <path d="M10.5 18h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                        <svg v-else-if="actor.label === 'Station'" class="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <rect x="4" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="2" />
+                                            <path d="M8 20h8M10 16v4M14 16v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                        <svg v-else class="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M6.5 18.5h10.2a3.7 3.7 0 0 0 .6-7.35A5.5 5.5 0 0 0 6.85 9.5a4.5 4.5 0 0 0-.35 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-extrabold">{{ actor.title }}</h3>
+                                        <p class="text-xs font-bold text-[#737686]">{{ actor.subtitle }}</p>
+                                    </div>
+                                </div>
+                                <ul class="space-y-2">
+                                    <li v-for="item in actor.body" :key="item" class="flex items-start gap-2 text-sm font-semibold leading-6 text-[#434655]">
+                                        <span class="mt-1 grid size-5 shrink-0 place-items-center rounded-md bg-[#eef4ff] text-xs font-black text-[#004ac6]">✓</span>
+                                        <span>{{ item }}</span>
+                                    </li>
+                                </ul>
+                                <div v-if="actor.highlighted" class="mt-auto pt-4">
+                                    <span class="inline-flex rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-extrabold text-orange-800">
+                                        Source of truth event ada di Station
+                                    </span>
+                                </div>
+                            </article>
 
-                            <g filter="url(#soft-shadow)">
-                                <rect x="48" y="128" width="220" height="210" rx="24" fill="#ffffff" stroke="#004ac6" stroke-width="3" />
-                                <circle cx="158" cy="184" r="34" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
-                                <rect x="143" y="158" width="30" height="54" rx="8" fill="#004ac6" />
-                                <circle cx="158" cy="185" r="9" fill="#ffffff" />
-                                <text x="158" y="250" text-anchor="middle" fill="#191b23" font-size="23" font-weight="800">1. Android</text>
-                                <text x="158" y="280" text-anchor="middle" fill="#434655" font-size="16">Capture foto</text>
-                                <text x="158" y="304" text-anchor="middle" fill="#434655" font-size="16">dan mulai event</text>
-                            </g>
+                            <div v-if="index < flowActors.length - 1" :key="`${actor.label}-arrow`" class="grid place-items-center">
+                                <div data-anime="arrow" class="grid size-12 rotate-90 place-items-center rounded-xl border border-[#b8cdf8] bg-[#eef4ff] text-[#004ac6] lg:rotate-0">
+                                    <svg class="size-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
 
-                            <g filter="url(#soft-shadow)">
-                                <rect x="340" y="128" width="220" height="210" rx="24" fill="#ffffff" stroke="#004ac6" stroke-width="3" />
-                                <circle cx="450" cy="184" r="34" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
-                                <rect x="426" y="168" width="48" height="12" rx="6" fill="#004ac6" />
-                                <rect x="426" y="188" width="48" height="12" rx="6" fill="#004ac6" opacity="0.65" />
-                                <ellipse cx="450" cy="210" rx="25" ry="7" fill="#0b6b21" opacity="0.82" />
-                                <text x="450" y="250" text-anchor="middle" fill="#191b23" font-size="23" font-weight="800">2. Station</text>
-                                <text x="450" y="280" text-anchor="middle" fill="#434655" font-size="16">Render, local DB,</text>
-                                <text x="450" y="304" text-anchor="middle" fill="#434655" font-size="16">dan printer queue</text>
-                            </g>
+                    <div class="mt-4 grid gap-3 md:grid-cols-3">
+                        <div class="rounded-xl border border-[#c3c6d7]/80 bg-[#F8FAFC] p-4 text-sm font-bold leading-6 text-[#434655]">
+                            <strong class="text-[#004ac6]">Cloud tidak mencetak langsung.</strong> Cloud hanya menerima request dan menyinkronkan status.
+                        </div>
+                        <div class="rounded-xl border border-[#c3c6d7]/80 bg-[#F8FAFC] p-4 text-sm font-bold leading-6 text-[#434655]">
+                            <strong class="text-[#004ac6]">Station menangani printer fisik.</strong> Semua antrean cetak tetap diproses lokal.
+                        </div>
+                        <div class="rounded-xl border border-[#c3c6d7]/80 bg-[#F8FAFC] p-4 text-sm font-bold leading-6 text-[#434655]">
+                            <strong class="text-[#004ac6]">Customer akses dari cloud.</strong> Gallery, download, dan print request dibuat mobile-first.
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                            <g filter="url(#soft-shadow)">
-                                <rect x="632" y="128" width="220" height="210" rx="24" fill="#ffffff" stroke="#004ac6" stroke-width="3" />
-                                <circle cx="742" cy="184" r="34" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
-                                <path d="M719 190 H764 C775 190 783 182 783 172 C783 164 776 157 767 156 C763 145 752 139 740 142 C730 144 724 151 721 160 C710 162 703 169 703 178 C703 186 710 190 719 190 Z" fill="#004ac6" />
-                                <text x="742" y="250" text-anchor="middle" fill="#191b23" font-size="23" font-weight="800">3. Cloud</text>
-                                <text x="742" y="280" text-anchor="middle" fill="#434655" font-size="16">Gallery, arsip,</text>
-                                <text x="742" y="304" text-anchor="middle" fill="#434655" font-size="16">dan admin portal</text>
-                            </g>
+            <section class="py-6">
+                <div data-anime="card" class="mb-4">
+                    <h2 class="text-3xl font-black tracking-normal">Akses sesuai kebutuhan pengguna</h2>
+                    <p class="mt-2 max-w-3xl text-sm leading-7 text-[#434655]">
+                        Tiga kebutuhan utama dipisahkan agar portal tetap sederhana dan tidak membingungkan.
+                    </p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-3">
+                    <article v-for="[title, body] in accessCards" :key="title" data-anime="card" class="rounded-xl border border-[#c3c6d7]/80 bg-white p-5 shadow-sm">
+                        <h3 class="text-lg font-extrabold">{{ title }}</h3>
+                        <p class="mt-3 text-sm leading-7 text-[#434655]">{{ body }}</p>
+                    </article>
+                </div>
+            </section>
 
-                            <path data-anime="flow-line" pathLength="34" d="M268 232 H338" fill="none" stroke="#004ac6" stroke-width="6" stroke-linecap="round" stroke-dasharray="12 8" marker-end="url(#arrow-blue)" />
-                            <path data-anime="flow-line" pathLength="34" d="M560 232 H630" fill="none" stroke="#004ac6" stroke-width="6" stroke-linecap="round" stroke-dasharray="12 8" marker-end="url(#arrow-blue)" />
-                            <text x="303" y="209" text-anchor="middle" fill="#003ea8" font-size="15" font-weight="800">event/session</text>
-                            <text x="595" y="209" text-anchor="middle" fill="#003ea8" font-size="15" font-weight="800">sync asset</text>
-
-                            <g>
-                                <rect x="58" y="384" width="240" height="84" rx="18" fill="#ffffff" stroke="#0b6b21" stroke-width="2" />
-                                <circle cx="93" cy="426" r="18" fill="#0b6b21" />
-                                <path d="M86 427 L92 435 L103 416" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-                                <text x="178" y="419" text-anchor="middle" fill="#0b6b21" font-size="17" font-weight="800">Source of truth</text>
-                                <text x="178" y="443" text-anchor="middle" fill="#0b6b21" font-size="14" font-weight="700">Event utama ada di Station</text>
-                            </g>
-
-                            <g>
-                                <rect x="330" y="384" width="240" height="84" rx="18" fill="#ffffff" stroke="#004ac6" stroke-width="2" />
-                                <circle cx="365" cy="426" r="18" fill="#004ac6" />
-                                <text x="365" y="434" text-anchor="middle" fill="#ffffff" font-size="24" font-weight="900">!</text>
-                                <text x="450" y="419" text-anchor="middle" fill="#003ea8" font-size="17" font-weight="800">Cloud bukan printer</text>
-                                <text x="450" y="443" text-anchor="middle" fill="#003ea8" font-size="14" font-weight="700">Station tetap cetak fisik</text>
-                            </g>
-
-                            <g>
-                                <rect x="602" y="384" width="240" height="84" rx="18" fill="#ffffff" stroke="#8B5CF6" stroke-width="2" />
-                                <circle cx="637" cy="426" r="18" fill="#8B5CF6" />
-                                <path d="M628 426 H646 M638 417 L648 426 L638 435" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-                                <text x="722" y="419" text-anchor="middle" fill="#5b21b6" font-size="17" font-weight="800">Link pendek</text>
-                                <text x="722" y="443" text-anchor="middle" fill="#5b21b6" font-size="14" font-weight="700">Gallery mudah dibagikan</text>
-                            </g>
-
-                            <path data-anime="flow-line" pathLength="34" d="M742 338 V358 H450 V340" fill="none" stroke="#8B5CF6" stroke-width="4" stroke-dasharray="10 8" marker-end="url(#arrow-green)" opacity="0.95" />
-                            <text x="596" y="356" text-anchor="middle" fill="#5b21b6" font-size="14" font-weight="800">print request dipolling station</text>
-
-                            <circle data-anime="flow-pulse" cx="303" cy="232" r="8" fill="#004ac6" />
-                            <circle data-anime="flow-pulse" cx="595" cy="232" r="8" fill="#8B5CF6" />
-                            <circle data-anime="flow-pulse" cx="596" cy="358" r="8" fill="#fea619" />
-                        </svg>
-                    </section>
-
-                    <article
-                        v-for="card in advantageCards"
-                        :key="card.label"
-                        data-anime="card"
-                        class="rounded-xl border border-[#c3c6d7] bg-white p-5 shadow-sm"
-                    >
-                        <p class="text-xs font-bold uppercase tracking-wide text-[#004ac6]">{{ card.label }}</p>
-                        <h2 class="mt-3 text-lg font-bold leading-snug">{{ card.title }}</h2>
-                        <p class="mt-2 text-sm leading-6 text-[#434655]">{{ card.body }}</p>
+            <section class="py-6">
+                <div data-anime="card" class="mb-4">
+                    <h2 class="text-3xl font-black tracking-normal">Fitur unggulan cloud</h2>
+                    <p class="mt-2 max-w-3xl text-sm leading-7 text-[#434655]">
+                        Fitur dibuat ringan dan langsung mendukung kebutuhan operasional photobooth.
+                    </p>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                    <article v-for="[title, body] in featureCards" :key="title" data-anime="card" class="min-h-40 rounded-xl border border-[#c3c6d7]/80 bg-white p-4 shadow-sm">
+                        <h3 class="text-base font-extrabold">{{ title }}</h3>
+                        <p class="mt-3 text-sm leading-6 text-[#434655]">{{ body }}</p>
                     </article>
                 </div>
             </section>
@@ -314,6 +364,10 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
             </section>
+
+            <footer class="border-t border-[#c3c6d7]/70 py-7 text-center text-sm font-bold text-[#737686]">
+                Dafydio Photobooth Cloud - customer portal, archive, and station sync coordinator.
+            </footer>
         </section>
     </main>
 </template>
