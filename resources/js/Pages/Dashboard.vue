@@ -122,8 +122,8 @@ onBeforeUnmount(() => {
                 </div>
             </header>
 
-            <section class="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:py-12">
-                <div>
+            <section class="flex flex-1 flex-col gap-8 py-8 lg:py-10">
+                <div class="max-w-3xl">
                     <div data-anime="card" class="inline-flex items-center rounded-full border border-[#c3c6d7] bg-white px-3 py-1.5 text-xs font-semibold text-[#434655] shadow-sm">
                         Customer gallery, admin console, station sync
                     </div>
@@ -178,8 +178,8 @@ onBeforeUnmount(() => {
                     </form>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                    <section data-anime="card" class="rounded-xl border border-[#c3c6d7] bg-white p-4 shadow-sm sm:col-span-2">
+                <div class="grid gap-4 md:grid-cols-3">
+                    <section data-anime="card" class="rounded-xl border border-[#c3c6d7] bg-white p-4 shadow-sm md:col-span-3">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <p class="text-xs font-bold uppercase tracking-wide text-[#004ac6]">Alur Photobooth</p>

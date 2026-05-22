@@ -1786,3 +1786,18 @@ Keputusan:
 Verifikasi:
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
+
+## 2026-05-22 - Susunan Layout Index Full-Width Diagram
+Perubahan:
+- Mengubah susunan halaman index `resources/js/Pages/Dashboard.vue`.
+- Hero dan aksi utama ditempatkan di bagian atas.
+- Diagram Android -> Station -> Cloud dipindahkan menjadi section full-width di bawah hero agar tidak sempit di kolom kanan.
+- Kartu keunggulan Android, Station, dan Cloud ditata sebagai tiga kolom setelah diagram.
+
+Keputusan:
+- Diagram utama butuh ruang horizontal penuh agar panah dan label lebih mudah dipahami.
+- Layout index kini mengikuti urutan baca: konteks produk, aksi masuk/buka gallery, diagram alur, lalu ringkasan keunggulan/status.
+
+Verifikasi:
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
