@@ -1749,3 +1749,22 @@ Keputusan:
 Verifikasi:
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
+
+## 2026-05-22 - Penyederhanaan Diagram Index
+Perubahan:
+- Menyederhanakan SVG alur di `resources/js/Pages/Dashboard.vue` karena tampilan sebelumnya terlalu padat dan sulit dipahami.
+- Diagram kini memakai 4 langkah besar:
+  - Android: capture foto dan mulai event.
+  - Station: render lokal dan printer queue.
+  - Database: event dan session tersimpan lokal.
+  - Cloud: gallery, arsip, dan admin portal.
+- Mengurangi label kecil dan detail ikon agar diagram tetap terbaca di card kanan.
+- Menambahkan tiga catatan ringkas: source of truth, cloud bukan printer, dan link pendek.
+
+Keputusan:
+- Halaman index memprioritaskan pemahaman cepat untuk user umum/admin, bukan detail teknis API.
+- Detail teknis endpoint dan payload tetap berada di dokumentasi API.
+
+Verifikasi:
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
