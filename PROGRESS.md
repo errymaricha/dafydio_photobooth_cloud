@@ -1708,3 +1708,23 @@ Keputusan:
 Verifikasi:
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
+
+## 2026-05-22 - SVG Animasi Alur Android Station Cloud
+Perubahan:
+- Memperbarui halaman index `resources/js/Pages/Dashboard.vue` dengan SVG inline untuk menjelaskan alur aplikasi photobooth.
+- SVG menggambarkan:
+  - Android sebagai perangkat capture foto di event.
+  - Station sebagai pusat render lokal, session workflow, queue printer, dan print fisik.
+  - Cloud sebagai archive, customer portal, admin console, dan sinkronisasi request.
+  - Customer/Admin sebagai pihak yang mengakses gallery, billing, dan monitoring.
+- Menambahkan animasi `anime.js` pada garis alur dan titik pulse di SVG.
+- Mengganti kartu kanan menjadi keunggulan per komponen: Android, Station, dan Cloud.
+
+Keputusan:
+- SVG dibuat inline agar mudah dikontrol oleh Vue dan `anime.js` tanpa asset eksternal.
+- Animasi tetap menghormati `prefers-reduced-motion` lewat guard yang sudah ada.
+- Narasi alur tetap menjaga boundary produk: cloud tidak menangani capture atau cetak fisik; station tetap eksekutor lokal.
+
+Verifikasi:
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 57 tests passed dengan 500 assertions.

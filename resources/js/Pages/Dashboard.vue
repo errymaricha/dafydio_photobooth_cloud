@@ -10,26 +10,21 @@ const runningAnimations = [];
 const sanitizedSessionCode = computed(() => sessionCode.value.trim().toUpperCase());
 const publicGalleryUrl = computed(() => (sanitizedSessionCode.value ? `/${sanitizedSessionCode.value}` : '#'));
 
-const accessCards = [
+const advantageCards = [
     {
-        label: 'Customer Portal',
-        title: 'Gallery, download, edit, dan print request',
-        body: 'Masuk memakai WhatsApp dan password dari station untuk melihat arsip foto.',
+        label: 'Android',
+        title: 'Capture cepat di lokasi event',
+        body: 'Perangkat Android fokus mengambil foto dan menjaga workflow operator tetap sederhana.',
     },
     {
-        label: 'Admin Console',
-        title: 'Operasional tenant dan station',
-        body: 'Kelola customer, session archive, station sync, billing, template, dan logs.',
+        label: 'Station',
+        title: 'Render lokal dan print fisik',
+        body: 'Station menangani session lokal, queue printer, retry, dan polling print request dari cloud.',
     },
     {
-        label: 'Public Gallery',
-        title: 'URL pendek siap share WhatsApp',
-        body: 'Gunakan kode session seperti SES-LM7CMO5G agar link lebih rapi saat dibagikan.',
-    },
-    {
-        label: 'Station API',
-        title: 'Sync archive dan print request polling',
-        body: 'Station tetap menangani capture dan cetak fisik, cloud menjadi koordinator.',
+        label: 'Cloud',
+        title: 'Gallery, arsip, dan share link pendek',
+        body: 'Cloud menyimpan asset, login customer, public gallery, admin console, dan koordinasi print request.',
     },
 ];
 
@@ -69,6 +64,22 @@ onMounted(() => {
             duration: 720,
             delay: stagger(90),
             ease: 'outCubic',
+        }),
+        animate(pageRoot.value.querySelectorAll('[data-anime="flow-line"]'), {
+            strokeDashoffset: [34, 0],
+            duration: 2200,
+            delay: stagger(180),
+            loop: true,
+            ease: 'linear',
+        }),
+        animate(pageRoot.value.querySelectorAll('[data-anime="flow-pulse"]'), {
+            scale: [0.82, 1.12],
+            opacity: [0.45, 0.95],
+            duration: 1800,
+            delay: stagger(220),
+            alternate: true,
+            loop: true,
+            ease: 'inOutSine',
         }),
     );
 });
@@ -168,8 +179,85 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                    <section data-anime="card" class="rounded-xl border border-[#c3c6d7] bg-white p-4 shadow-sm sm:col-span-2">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-bold uppercase tracking-wide text-[#004ac6]">Alur Photobooth</p>
+                                <h2 class="mt-2 text-xl font-bold leading-snug">Android, Station, dan Cloud bekerja sesuai perannya.</h2>
+                            </div>
+                            <span class="hidden rounded-full bg-[#dbe1ff] px-3 py-1 text-xs font-bold text-[#003ea8] sm:inline-flex">Live Sync</span>
+                        </div>
+
+                        <svg
+                            class="mt-4 h-auto w-full"
+                            viewBox="0 0 720 420"
+                            role="img"
+                            aria-labelledby="photobooth-flow-title photobooth-flow-desc"
+                        >
+                            <title id="photobooth-flow-title">Alur aplikasi Dafydio Photobooth</title>
+                            <desc id="photobooth-flow-desc">Diagram dari Android capture ke Station, Cloud, lalu Customer dan Admin.</desc>
+
+                            <defs>
+                                <linearGradient id="flow-blue" x1="0%" x2="100%" y1="0%" y2="0%">
+                                    <stop offset="0%" stop-color="#004ac6" />
+                                    <stop offset="100%" stop-color="#8B5CF6" />
+                                </linearGradient>
+                                <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#00174b" flood-opacity="0.12" />
+                                </filter>
+                            </defs>
+
+                            <rect width="720" height="420" rx="28" fill="#f3f3fe" />
+                            <path d="M32 340 C160 285 218 390 330 322 C438 257 514 321 690 250" fill="none" stroke="#dbe1ff" stroke-width="18" stroke-linecap="round" />
+
+                            <g filter="url(#soft-shadow)">
+                                <rect x="34" y="86" width="146" height="206" rx="24" fill="#ffffff" stroke="#c3c6d7" />
+                                <rect x="76" y="110" width="62" height="120" rx="16" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
+                                <circle cx="107" cy="170" r="22" fill="#004ac6" />
+                                <circle cx="107" cy="170" r="10" fill="#ffffff" opacity="0.88" />
+                                <text x="107" y="262" text-anchor="middle" fill="#191b23" font-size="22" font-weight="700">Android</text>
+                                <text x="107" y="284" text-anchor="middle" fill="#434655" font-size="13">Capture foto</text>
+                            </g>
+
+                            <g filter="url(#soft-shadow)">
+                                <rect x="288" y="78" width="158" height="214" rx="24" fill="#ffffff" stroke="#c3c6d7" />
+                                <rect x="324" y="114" width="86" height="92" rx="12" fill="#ffddb8" stroke="#855300" stroke-width="3" />
+                                <path d="M330 222 H404 L420 246 H314 Z" fill="#191b23" />
+                                <rect x="336" y="136" width="62" height="12" rx="6" fill="#855300" opacity="0.55" />
+                                <rect x="336" y="160" width="62" height="12" rx="6" fill="#855300" opacity="0.35" />
+                                <text x="367" y="262" text-anchor="middle" fill="#191b23" font-size="22" font-weight="700">Station</text>
+                                <text x="367" y="284" text-anchor="middle" fill="#434655" font-size="13">Render + print</text>
+                            </g>
+
+                            <g filter="url(#soft-shadow)">
+                                <rect x="536" y="76" width="150" height="150" rx="28" fill="#ffffff" stroke="#c3c6d7" />
+                                <path d="M584 158 H642 C658 158 670 147 670 132 C670 118 660 107 646 105 C640 87 625 78 606 82 C592 84 582 94 578 108 C562 110 550 121 550 136 C550 149 563 158 584 158 Z" fill="#dbe1ff" stroke="#004ac6" stroke-width="3" />
+                                <text x="611" y="194" text-anchor="middle" fill="#191b23" font-size="22" font-weight="700">Cloud</text>
+                                <text x="611" y="216" text-anchor="middle" fill="#434655" font-size="13">Archive + portal</text>
+                            </g>
+
+                            <g filter="url(#soft-shadow)">
+                                <rect x="488" y="280" width="198" height="86" rx="22" fill="#ffffff" stroke="#c3c6d7" />
+                                <circle cx="532" cy="323" r="20" fill="#fea619" />
+                                <path d="M526 324 L532 331 L542 315" fill="none" stroke="#684000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                                <text x="586" y="316" fill="#191b23" font-size="20" font-weight="700">Customer / Admin</text>
+                                <text x="586" y="340" fill="#434655" font-size="13">Gallery, billing, monitoring</text>
+                            </g>
+
+                            <path data-anime="flow-line" pathLength="34" d="M182 186 C226 168 246 168 286 182" fill="none" stroke="url(#flow-blue)" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 8" />
+                            <path data-anime="flow-line" pathLength="34" d="M448 178 C484 145 506 134 536 136" fill="none" stroke="url(#flow-blue)" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 8" />
+                            <path data-anime="flow-line" pathLength="34" d="M612 228 C606 250 598 264 588 280" fill="none" stroke="url(#flow-blue)" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 8" />
+                            <path data-anime="flow-line" pathLength="34" d="M488 324 C412 344 336 330 282 284" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 8" opacity="0.9" />
+
+                            <circle data-anime="flow-pulse" cx="214" cy="176" r="9" fill="#004ac6" />
+                            <circle data-anime="flow-pulse" cx="492" cy="146" r="9" fill="#8B5CF6" />
+                            <circle data-anime="flow-pulse" cx="604" cy="252" r="9" fill="#fea619" />
+                            <circle data-anime="flow-pulse" cx="388" cy="330" r="8" fill="#10B981" />
+                        </svg>
+                    </section>
+
                     <article
-                        v-for="card in accessCards"
+                        v-for="card in advantageCards"
                         :key="card.label"
                         data-anime="card"
                         class="rounded-xl border border-[#c3c6d7] bg-white p-5 shadow-sm"
