@@ -199,7 +199,7 @@ onBeforeUnmount(() => {
                         <input
                             id="session-code"
                             v-model="sessionCode"
-                            class="min-h-12 w-full rounded-xl border-[#c3c6d7] bg-white text-sm font-bold uppercase text-[#191b23] placeholder:normal-case placeholder:text-[#737686] focus:border-[#004ac6] focus:ring-[#004ac6]"
+                            class="min-h-12 w-full rounded-xl border-[#c3c6d7] bg-white px-4 text-sm font-bold uppercase text-[#191b23] placeholder:normal-case placeholder:text-[#737686] focus:border-[#004ac6] focus:ring-[#004ac6]"
                             inputmode="text"
                             placeholder="Contoh: SES-LM7CMO5G"
                             type="text"

@@ -1823,3 +1823,13 @@ Keputusan:
 Verifikasi:
 - `npm run build` berhasil.
 - `php artisan test` berhasil, 57 tests passed dengan 500 assertions.
+
+## 2026-05-22 - Padding Input Kode Gallery
+Perubahan:
+- Menambahkan padding horizontal `px-4` pada input Kode Gallery di `resources/js/Pages/Dashboard.vue`.
+
+Keputusan:
+- Input gallery harus punya ruang kiri/kanan yang cukup agar teks placeholder dan kode session tidak menempel ke border.
+
+Verifikasi:
+- `npm run build` berhasil.
