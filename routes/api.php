@@ -59,6 +59,7 @@ Route::prefix('customer')->group(function (): void {
         Route::get('payments', [CustomerPaymentController::class, 'index']);
         Route::get('edit-jobs', [CustomerEditJobController::class, 'index']);
         Route::post('edit-jobs', [CustomerEditJobController::class, 'store']);
+        Route::get('print-requests', [CustomerPrintRequestController::class, 'index']);
         Route::post('print-requests', [CustomerPrintRequestController::class, 'store']);
     });
 });

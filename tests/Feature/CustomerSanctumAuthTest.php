@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\CloudPrintRequest;
 use App\Models\CloudSession;
 use App\Models\CloudSessionAsset;
 use App\Models\Customer;
@@ -161,6 +162,69 @@ class CustomerSanctumAuthTest extends TestCase
             'id' => $customer->id,
             'name' => 'Nama Customer Baru',
         ]);
+    }
+
+    public function test_customer_can_list_own_print_requests(): void
+    {
+        [$tenant, $customer] = $this->createCustomer();
+        $station = Station::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Station Test',
+            'code' => 'ST-001',
+            'status' => 'active',
+        ]);
+        $session = CloudSession::query()->create([
+            'tenant_id' => $tenant->id,
+            'station_id' => $station->id,
+            'customer_id' => $customer->id,
+            'station_session_id' => 'local-session-id',
+            'title' => 'Wedding Session',
+            'sync_status' => 'complete',
+            'metadata' => [
+                'station_session' => [
+                    'session_code' => 'SES-PRINT-001',
+                ],
+            ],
+        ]);
+        $asset = CloudSessionAsset::query()->create([
+            'tenant_id' => $tenant->id,
+            'cloud_session_id' => $session->id,
+            'station_asset_id' => 'framed-1',
+            'type' => 'framed',
+            'disk' => 'public',
+            'path' => 'tenants/test/customer/framed.jpg',
+            'mime_type' => 'image/jpeg',
+            'status' => 'uploaded',
+        ]);
+        $printRequest = CloudPrintRequest::query()->create([
+            'tenant_id' => $tenant->id,
+            'station_id' => $station->id,
+            'customer_id' => $customer->id,
+            'cloud_session_id' => $session->id,
+            'cloud_session_asset_id' => $asset->id,
+            'quantity' => 2,
+            'status' => 'pending_operator',
+            'priority' => 'normal',
+            'payment_status' => 'not_required',
+        ]);
+
+        $token = $this->postJson('/api/customer/auth/login', [
+            'tenant_slug' => $tenant->slug,
+            'whatsapp_number' => $customer->whatsapp_number,
+            'password' => 'password',
+        ])->json('data.token');
+
+        $this->withToken($token)
+            ->getJson('/api/customer/print-requests')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $printRequest->id)
+            ->assertJsonPath('data.0.session_code', 'SES-PRINT-001')
+            ->assertJsonPath('data.0.asset_type', 'framed')
+            ->assertJsonPath('data.0.station_name', 'Station Test')
+            ->assertJsonPath('data.0.quantity', 2)
+            ->assertJsonPath('data.0.status', 'pending_operator')
+            ->assertJsonPath('data.0.payment_status', 'not_required')
+            ->assertJsonPath('meta.total', 1);
     }
 
     public function test_customer_name_is_required_when_updating_profile(): void

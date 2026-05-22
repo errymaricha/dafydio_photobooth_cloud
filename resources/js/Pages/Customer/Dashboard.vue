@@ -6,10 +6,12 @@ const sessions = ref([]);
 const templates = ref([]);
 const payments = ref([]);
 const editJobs = ref([]);
+const printRequests = ref([]);
 const loading = ref(true);
 const templatesLoading = ref(false);
 const paymentsLoading = ref(false);
 const editJobsLoading = ref(false);
+const printRequestsLoading = ref(false);
 const errorMessage = ref('');
 const actionMessage = ref('');
 const actionError = ref('');
@@ -27,6 +29,7 @@ const customerName = computed(() => customer.value?.name || 'Customer');
 const visibleSessions = computed(() => sessions.value);
 const ownedTemplates = computed(() => templates.value.filter((template) => template.is_owned || template.is_premium_included));
 const pendingPayments = computed(() => payments.value.filter((payment) => payment.status === 'pending'));
+const activePrintRequests = computed(() => printRequests.value.filter((request) => !['printed', 'failed'].includes(request.status)));
 const totalAssets = computed(() => sessions.value.reduce((total, session) => total + (session.assets?.length || 0), 0));
 const uploadedAssets = computed(() => sessions.value.reduce((total, session) => total + uploadedSessionAssets(session).length, 0));
 const latestSession = computed(() => visibleSessions.value[0] || null);
@@ -198,6 +201,32 @@ const fetchEditJobs = async () => {
     }
 };
 
+const fetchPrintRequests = async () => {
+    if (!localStorage.getItem('dafydio_customer_token')) {
+        redirectToLogin();
+        return;
+    }
+
+    printRequestsLoading.value = true;
+
+    try {
+        const response = await window.axios.get('/api/customer/print-requests', {
+            headers: customerHeaders(),
+        });
+
+        printRequests.value = response.data.data || [];
+    } catch (error) {
+        if (error.response?.status === 401) {
+            redirectToLogin();
+            return;
+        }
+
+        actionError.value = 'Print request belum bisa dimuat.';
+    } finally {
+        printRequestsLoading.value = false;
+    }
+};
+
 const downloadAsset = async (session, preferredAsset = null) => {
     const asset = preferredAsset || firstAsset(session);
 
@@ -253,6 +282,7 @@ const requestPrint = async (session, preferredAsset = null) => {
         });
 
         actionMessage.value = 'Print request berhasil dibuat.';
+        await fetchPrintRequests();
     } catch (error) {
         if (error.response?.status === 401) {
             redirectToLogin();
@@ -431,6 +461,7 @@ onMounted(() => {
     fetchTemplates();
     fetchPayments();
     fetchEditJobs();
+    fetchPrintRequests();
 });
 </script>
 
@@ -488,9 +519,12 @@ onMounted(() => {
             <p v-if="actionMessage" class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-900">{{ actionMessage }}</p>
             <p v-if="actionError" class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700">{{ actionError }}</p>
 
-            <div class="mb-5 grid grid-cols-3 gap-3 rounded-xl border border-[#c3c6d7] bg-white p-2 shadow-sm">
+            <div class="mb-5 grid grid-cols-4 gap-2 rounded-xl border border-[#c3c6d7] bg-white p-2 shadow-sm">
                 <button class="min-h-11 rounded-lg text-sm font-black" :class="activeView === 'sessions' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'sessions'">
                     Sessions
+                </button>
+                <button class="min-h-11 rounded-lg text-sm font-black" :class="activeView === 'prints' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'prints'">
+                    Prints
                 </button>
                 <button class="min-h-11 rounded-lg text-sm font-black" :class="activeView === 'marketplace' ? 'bg-[#004ac6] text-white' : 'text-[#004ac6]'" type="button" @click="activeView = 'marketplace'">
                     Marketplace
@@ -559,6 +593,63 @@ onMounted(() => {
                     <img class="mx-auto mb-4 size-16 rounded-full object-cover shadow-sm" :src="'/images/dafydio-booth-icon.png'" alt="Dafydio app icon">
                     <h3 class="text-xl font-black">Belum ada session</h3>
                     <p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#434655]">Session akan muncul setelah station sync ke cloud untuk WhatsApp kamu.</p>
+                </div>
+            </section>
+
+            <section v-if="activeView === 'prints'">
+                <div class="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl font-black">Print Request</h2>
+                        <p class="mt-1 text-xs font-semibold text-[#737686]">{{ activePrintRequests.length }} request aktif dari {{ printRequests.length }} total.</p>
+                    </div>
+                    <button class="min-h-10 rounded-xl border border-[#c3c6d7] bg-white px-3 text-xs font-black text-[#004ac6]" type="button" @click="fetchPrintRequests">Refresh</button>
+                </div>
+
+                <div v-if="printRequestsLoading" class="rounded-xl border border-[#c3c6d7] bg-white p-5 text-sm text-[#434655]">
+                    Loading print requests...
+                </div>
+
+                <div v-else-if="printRequests.length > 0" class="space-y-3">
+                    <article v-for="printRequest in printRequests" :key="printRequest.id" class="rounded-xl border border-[#c3c6d7] bg-white p-4 shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="truncate text-base font-black">{{ printRequest.session_title || 'Photobooth Session' }}</p>
+                                <p class="mt-1 text-xs font-bold uppercase tracking-wide text-[#737686]">{{ printRequest.session_code || 'Session' }} - {{ printRequest.asset_type || 'asset' }}</p>
+                            </div>
+                            <span class="shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase" :class="printRequest.status === 'printed' ? 'bg-green-100 text-[#10B981]' : printRequest.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-[#dbe1ff] text-[#003ea8]'">
+                                {{ printRequest.status }}
+                            </span>
+                        </div>
+                        <div class="mt-4 grid grid-cols-2 gap-3 text-xs font-bold text-[#434655] md:grid-cols-4">
+                            <div class="rounded-xl bg-[#f3f3fe] p-3">
+                                <p class="text-[#737686]">Copies</p>
+                                <p class="mt-1 text-sm font-black text-[#191b23]">{{ printRequest.quantity }}</p>
+                            </div>
+                            <div class="rounded-xl bg-[#f3f3fe] p-3">
+                                <p class="text-[#737686]">Payment</p>
+                                <p class="mt-1 text-sm font-black text-[#191b23]">{{ printRequest.payment_status }}</p>
+                            </div>
+                            <div class="rounded-xl bg-[#f3f3fe] p-3">
+                                <p class="text-[#737686]">Station</p>
+                                <p class="mt-1 truncate text-sm font-black text-[#191b23]">{{ printRequest.station_name || printRequest.station_code || '-' }}</p>
+                            </div>
+                            <div class="rounded-xl bg-[#f3f3fe] p-3">
+                                <p class="text-[#737686]">Dibuat</p>
+                                <p class="mt-1 text-sm font-black text-[#191b23]">{{ formatDate(printRequest.created_at) }}</p>
+                            </div>
+                        </div>
+                        <p v-if="printRequest.last_error" class="mt-3 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700">{{ printRequest.last_error }}</p>
+                        <p v-else-if="printRequest.status === 'pending_operator'" class="mt-3 rounded-xl bg-[#eef4ff] p-3 text-xs font-semibold text-[#003ea8]">Menunggu station mengambil request cetak.</p>
+                        <p v-else-if="printRequest.status === 'claimed'" class="mt-3 rounded-xl bg-[#eef4ff] p-3 text-xs font-semibold text-[#003ea8]">Station sudah mengambil request ini.</p>
+                        <p v-else-if="printRequest.status === 'printing'" class="mt-3 rounded-xl bg-[#eef4ff] p-3 text-xs font-semibold text-[#003ea8]">Sedang dicetak oleh station.</p>
+                        <p v-else-if="printRequest.status === 'printed'" class="mt-3 rounded-xl bg-green-50 p-3 text-xs font-semibold text-green-700">Foto sudah selesai dicetak.</p>
+                    </article>
+                </div>
+
+                <div v-else class="rounded-xl border border-[#c3c6d7] bg-white p-6 text-center shadow-sm">
+                    <div class="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-[#e1e2ed] text-2xl font-black text-[#737686]">PR</div>
+                    <h3 class="text-xl font-black">Belum ada print request</h3>
+                    <p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#434655]">Buka detail session, pilih foto, lalu tekan Print untuk membuat request cetak.</p>
                 </div>
             </section>
 

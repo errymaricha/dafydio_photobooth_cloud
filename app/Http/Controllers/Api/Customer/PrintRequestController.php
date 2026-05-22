@@ -11,6 +11,34 @@ use Illuminate\Http\Request;
 
 class PrintRequestController extends Controller
 {
+    public function index(Request $request): JsonResponse
+    {
+        $customer = $request->user();
+
+        $printRequests = CloudPrintRequest::query()
+            ->with([
+                'asset:id,type,station_asset_id',
+                'session:id,title,station_session_id,metadata',
+                'station:id,name,code',
+            ])
+            ->where('tenant_id', $customer->tenant_id)
+            ->where('customer_id', $customer->id)
+            ->latest()
+            ->paginate(20);
+
+        return response()->json([
+            'data' => collect($printRequests->items())
+                ->map(fn (CloudPrintRequest $printRequest): array => $this->printRequestPayload($printRequest))
+                ->values(),
+            'meta' => [
+                'current_page' => $printRequests->currentPage(),
+                'last_page' => $printRequests->lastPage(),
+                'total' => $printRequests->total(),
+            ],
+            'message' => null,
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $customer = $request->user();
@@ -49,5 +77,34 @@ class PrintRequestController extends Controller
             'meta' => [],
             'message' => 'Print request created',
         ], 201);
+    }
+
+    private function printRequestPayload(CloudPrintRequest $printRequest): array
+    {
+        $sessionCode = $printRequest->session?->metadata['station_session']['session_code']
+            ?? $printRequest->session?->station_session_id;
+
+        return [
+            'id' => $printRequest->id,
+            'cloud_session_id' => $printRequest->cloud_session_id,
+            'cloud_session_asset_id' => $printRequest->cloud_session_asset_id,
+            'session_title' => $printRequest->session?->title,
+            'session_code' => $sessionCode,
+            'asset_type' => $printRequest->asset?->type,
+            'station_asset_id' => $printRequest->asset?->station_asset_id,
+            'station_name' => $printRequest->station?->name,
+            'station_code' => $printRequest->station?->code,
+            'quantity' => $printRequest->quantity,
+            'status' => $printRequest->status,
+            'priority' => $printRequest->priority,
+            'payment_status' => $printRequest->payment_status,
+            'station_print_order_id' => $printRequest->station_print_order_id,
+            'station_print_queue_job_id' => $printRequest->station_print_queue_job_id,
+            'claimed_at' => $printRequest->claimed_at?->toDateTimeString(),
+            'printed_at' => $printRequest->printed_at?->toDateTimeString(),
+            'failed_at' => $printRequest->failed_at?->toDateTimeString(),
+            'last_error' => $printRequest->last_error,
+            'created_at' => $printRequest->created_at?->toDateTimeString(),
+        ];
     }
 }

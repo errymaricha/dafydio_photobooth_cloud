@@ -11,6 +11,30 @@ Dokumen ini adalah catatan status kerja. Setiap perubahan penting harus ditambah
 - Cloud tetap hanya menjadi arsip, portal, marketplace, billing, editor, dan print request coordinator.
 - Station tetap menjadi executor capture dan physical printing.
 
+## 2026-05-22 - Customer Print Request Status
+Perubahan:
+- Menambahkan endpoint customer `GET /api/customer/print-requests` untuk melihat daftar request cetak milik customer login.
+- Endpoint list sudah tenant-scoped dan customer-scoped, memakai pagination 20 item, serta mengembalikan session code, asset type, station, status, payment status, dan timestamp status print.
+- Dashboard customer sekarang punya tab `Prints` untuk melihat status request cetak: pending operator, claimed, printing, printed, atau failed.
+- Setelah customer membuat request print dari dashboard, daftar print request otomatis di-refresh.
+- Menambahkan coverage test customer untuk memastikan customer hanya bisa melihat print request miliknya sendiri.
+
+File utama:
+- `app/Http/Controllers/Api/Customer/PrintRequestController.php`
+- `routes/api.php`
+- `resources/js/Pages/Customer/Dashboard.vue`
+- `tests/Feature/CustomerSanctumAuthTest.php`
+
+Verifikasi:
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan test --filter=CustomerSanctumAuthTest` berhasil, 9 tests passed dengan 46 assertions.
+- `npm run build` berhasil.
+- `php artisan route:list --except-vendor --path=api/customer` berhasil dan route customer print requests tersedia.
+- `php artisan test` berhasil, 59 tests passed dengan 521 assertions.
+
+Catatan lanjutan:
+- Tampilan tab `Prints` masih memakai data customer sederhana. Detail tindakan lanjutan seperti reorder print, cancel request, dan filter status bisa dibuat setelah alur station polling diuji end-to-end.
+
 ## 2026-05-18 22:51 - SOP Concept Cloud Print Request
 Perubahan dokumentasi:
 - Menambahkan konsep SOP khusus request print dari cloud di `ARCHITECTURE.md`.
