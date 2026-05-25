@@ -22,6 +22,8 @@ class CloudSession extends Model
         'started_at',
         'ended_at',
         'sync_status',
+        'archived_at',
+        'assets_deleted_at',
         'metadata',
     ];
 
@@ -30,6 +32,8 @@ class CloudSession extends Model
         return [
             'started_at' => 'datetime',
             'ended_at' => 'datetime',
+            'archived_at' => 'datetime',
+            'assets_deleted_at' => 'datetime',
             'metadata' => 'array',
         ];
     }

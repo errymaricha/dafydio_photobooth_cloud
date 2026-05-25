@@ -1,5 +1,5 @@
 <script setup>
-import { useForm, usePage } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AdminPagination from '@/Components/AdminPagination.vue';
 
@@ -13,6 +13,7 @@ defineProps({
 const page = usePage();
 const flash = computed(() => page.props.flash || {});
 
+const logoutForm = useForm({});
 const tokenForm = useForm({});
 const createForm = useForm({
     name: '',
@@ -45,20 +46,82 @@ const regenerateToken = (station) => {
         preserveScroll: true,
     });
 };
+
+const logout = () => {
+    logoutForm.post('/admin/logout');
+};
+
+const sidebarItems = [
+    ['DB', 'Overview', '/admin', false],
+    ['ST', 'Stations', '/admin/stations', true],
+    ['CU', 'Customers', '/admin/customers', false],
+    ['SE', 'Sessions', '/admin/sessions', false],
+    ['TP', 'Templates', '/admin/templates', false],
+    ['PR', 'Print Requests', '#prints', false],
+    ['BI', 'Billing', '/admin/payments', false],
+    ['LG', 'Logs', '/admin/sync-logs', false],
+    ['SG', 'Settings', '#settings', false],
+];
+
+const bottomItems = [
+    ['DB', 'Dashboard', '/admin', false],
+    ['ST', 'Stations', '/admin/stations', true],
+    ['CU', 'Customers', '/admin/customers', false],
+    ['SE', 'Sessions', '/admin/sessions', false],
+    ['LG', 'Logs', '/admin/sync-logs', false],
+];
 </script>
 
 <template>
     <main class="min-h-screen bg-[#F8FAFC] text-[#191b23]">
-        <section class="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-            <header class="flex flex-col gap-4 rounded-xl border border-[#c3c6d7]/40 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
+        <header class="fixed left-0 top-0 z-50 flex h-16 w-full items-center justify-between bg-[#faf8ff] px-4 shadow-sm lg:hidden">
+            <div class="flex items-center gap-3">
+                <span class="flex size-9 items-center justify-center rounded-lg bg-[#dbe1ff] text-xs font-bold text-[#003ea8]">ST</span>
+                <span class="flex items-center gap-2"><img class="size-8 rounded-lg object-cover" :src="'/images/dafydio-booth-icon.png'" alt="Dafydio app icon"><span class="text-xl font-bold text-[#004ac6]">Dafydio</span></span>
+            </div>
+            <button class="flex size-9 items-center justify-center rounded-full border border-[#c3c6d7] bg-white text-xs font-bold text-[#004ac6]" type="button" @click="logout">AD</button>
+        </header>
+
+        <aside class="fixed inset-y-0 left-0 z-50 hidden w-[260px] flex-col border-r border-[#c3c6d7] bg-white lg:flex">
+            <div class="flex h-16 items-center border-b border-[#c3c6d7] px-6">
+                <span class="flex items-center gap-2"><img class="size-8 rounded-lg object-cover" :src="'/images/dafydio-booth-icon.png'" alt="Dafydio app icon"><span class="text-xl font-bold text-[#004ac6]">Dafydio</span></span>
+            </div>
+            <nav class="flex-1 space-y-1 overflow-y-auto p-4">
+                <template v-for="([icon, label, href, active], index) in sidebarItems" :key="label">
+                    <div v-if="index === 6" class="px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-wider text-[#737686]">Finance &amp; System</div>
+                    <Link v-if="href.startsWith('/')" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors" :class="active ? 'bg-[#dbe1ff] text-[#003ea8]' : 'text-[#434655] hover:bg-[#f3f3fe]'" :href="href">
+                        <span class="flex size-7 items-center justify-center rounded-md bg-white/70 text-[10px] font-bold">{{ icon }}</span>
+                        {{ label }}
+                    </Link>
+                    <a v-else class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors" :class="active ? 'bg-[#dbe1ff] text-[#003ea8]' : 'text-[#434655] hover:bg-[#f3f3fe]'" :href="href">
+                        <span class="flex size-7 items-center justify-center rounded-md bg-[#f3f3fe] text-[10px] font-bold text-[#004ac6]">{{ icon }}</span>
+                        {{ label }}
+                    </a>
+                </template>
+            </nav>
+            <div class="border-t border-[#c3c6d7] p-4">
+                <button class="flex w-full items-center gap-3 rounded-xl bg-[#f3f3fe] p-2 text-left" type="button" @click="logout">
+                    <span class="flex size-10 items-center justify-center rounded-full border border-[#c3c6d7] bg-white text-xs font-bold text-[#004ac6]">AD</span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block truncate text-xs font-semibold">Admin User</span>
+                        <span class="block truncate text-[10px] text-[#737686]">Tenant Admin</span>
+                    </span>
+                    <span class="text-xs font-bold text-[#737686]">OUT</span>
+                </button>
+            </div>
+        </aside>
+
+        <section class="px-4 pb-28 pt-20 lg:ml-[260px] lg:p-8">
+            <header class="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center lg:mb-8">
                 <div>
-                    <p class="text-sm font-medium text-[#434655]">Admin / Stations</p>
-                    <h1 class="mt-1 text-2xl font-bold text-[#004ac6] sm:text-3xl">Station Token Management</h1>
-                    <p class="mt-2 max-w-2xl text-sm leading-6 text-[#434655]">
+                    <h1 class="text-[22px] font-bold leading-[1.3] lg:text-[32px]">Stations</h1>
+                    <p class="mt-1 max-w-2xl text-sm leading-6 text-[#434655]">
                         Token station dipakai Android/station untuk sync session, upload asset, dan polling print request.
                     </p>
                 </div>
-                <a class="min-h-11 rounded-lg border border-[#c3c6d7] bg-white px-4 py-3 text-sm font-semibold text-[#434655]" href="/admin">Kembali Dashboard</a>
+                <Link class="inline-flex min-h-11 items-center rounded-lg border border-[#c3c6d7] bg-white px-4 text-sm font-semibold text-[#434655] hover:bg-[#f3f3fe]" href="/admin">
+                    Dashboard
+                </Link>
             </header>
 
             <section v-if="flash.message" class="mt-5 rounded-xl border border-[#dbe1ff] bg-[#eeefff] p-4 text-sm leading-6 text-[#00174b]">
@@ -157,5 +220,14 @@ const regenerateToken = (station) => {
                 <AdminPagination :paginator="stations" />
             </section>
         </section>
+
+        <nav class="fixed bottom-0 left-0 z-50 flex h-20 w-full items-center justify-around border-t border-[#c3c6d7] bg-[#ededf9] px-2 lg:hidden">
+            <template v-for="([icon, label, href, active]) in bottomItems" :key="label">
+                <Link class="flex flex-col items-center justify-center rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors" :class="active ? 'bg-[#fea619] text-[#684000]' : 'text-[#434655] hover:bg-[#e7e7f3]'" :href="href">
+                    <span class="text-sm font-bold">{{ icon }}</span>
+                    <span class="mt-1">{{ label }}</span>
+                </Link>
+            </template>
+        </nav>
     </main>
 </template>

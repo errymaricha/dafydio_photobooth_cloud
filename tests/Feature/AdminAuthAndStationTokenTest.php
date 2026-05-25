@@ -92,6 +92,40 @@ class AdminAuthAndStationTokenTest extends TestCase
         $this->assertNotNull($station->refresh()->api_token_hash);
     }
 
+    public function test_tenant_admin_can_update_own_password(): void
+    {
+        [$user] = $this->createTenantAdmin();
+
+        $this->actingAs($user)
+            ->from('/admin#settings')
+            ->patch('/admin/password', [
+                'current_password' => 'password',
+                'password' => 'new-password-123',
+                'password_confirmation' => 'new-password-123',
+            ])
+            ->assertRedirect('/admin#settings')
+            ->assertSessionHas('message', 'Password admin berhasil diperbarui.');
+
+        $this->assertTrue(Hash::check('new-password-123', $user->fresh()->password));
+    }
+
+    public function test_tenant_admin_cannot_update_password_with_wrong_current_password(): void
+    {
+        [$user] = $this->createTenantAdmin();
+
+        $this->actingAs($user)
+            ->from('/admin#settings')
+            ->patch('/admin/password', [
+                'current_password' => 'wrong-password',
+                'password' => 'new-password-123',
+                'password_confirmation' => 'new-password-123',
+            ])
+            ->assertRedirect('/admin#settings')
+            ->assertSessionHasErrors('current_password');
+
+        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+    }
+
     public function test_tenant_admin_can_create_station_with_initial_token(): void
     {
         [$user, $tenant] = $this->createTenantAdmin();

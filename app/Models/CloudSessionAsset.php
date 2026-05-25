@@ -25,7 +25,15 @@ class CloudSessionAsset extends Model
         'width',
         'height',
         'status',
+        'deleted_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'deleted_at' => 'datetime',
+        ];
+    }
 
     public function session(): BelongsTo
     {

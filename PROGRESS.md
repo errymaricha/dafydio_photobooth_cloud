@@ -11,6 +11,69 @@ Dokumen ini adalah catatan status kerja. Setiap perubahan penting harus ditambah
 - Cloud tetap hanya menjadi arsip, portal, marketplace, billing, editor, dan print request coordinator.
 - Station tetap menjadi executor capture dan physical printing.
 
+## 2026-05-25 - Fitur Ubah Password Admin
+Perubahan:
+- Menambahkan endpoint admin untuk ubah password: `PATCH /admin/password`.
+- Menambahkan validasi password lama (`current_password`) dan validasi password baru (`min:8`, `confirmed`).
+- Menambahkan update hash password admin tenant pada controller auth admin.
+- Menambahkan form "Settings > Ubah Password" di dashboard admin (`/admin`) dengan handling error per field dan flash sukses.
+- Menambahkan test untuk skenario:
+  - admin berhasil mengganti password sendiri.
+  - admin gagal ganti password jika password lama salah.
+
+File utama:
+- `app/Http/Controllers/Admin/AuthController.php`
+- `routes/web.php`
+- `resources/js/Pages/Admin/Dashboard.vue`
+- `tests/Feature/AdminAuthAndStationTokenTest.php`
+- `PROGRESS.md`
+
+Verifikasi:
+- `php artisan test --filter=AdminAuthAndStationTokenTest` berhasil, 25 tests passed dengan 273 assertions.
+
+## 2026-05-25 - Cloud Archive Retention Command
+Perubahan:
+- Menambahkan lifecycle retention cloud: setelah customer tidak punya session baru selama 3 bulan, semua session customer ditandai `archived`.
+- Setelah customer tidak punya session baru selama 5 bulan, file asset session archived dihapus dari storage, asset ditandai `deleted`, dan session ditandai `deleted`.
+- Menambahkan field `cloud_sessions.archived_at`, `cloud_sessions.assets_deleted_at`, dan `cloud_session_assets.deleted_at`.
+- Menambahkan command `php artisan cloud:enforce-retention` dengan opsi `--archive-months`, `--delete-months`, dan `--dry-run`.
+- Menjadwalkan command berjalan harian pukul 02:15 melalui scheduler Laravel.
+- Menambahkan test untuk archive 3 bulan, delete 5 bulan, customer dengan session baru tetap aktif, dan dry-run tidak mengubah data/file.
+
+File utama:
+- `app/Console/Commands/EnforceCloudArchiveRetention.php`
+- `database/migrations/2026_05_25_000001_add_retention_fields_to_cloud_archive.php`
+- `app/Models/CloudSession.php`
+- `app/Models/CloudSessionAsset.php`
+- `routes/console.php`
+- `tests/Feature/CloudRetentionCommandTest.php`
+- `PROGRESS.md`
+
+Verifikasi:
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan migrate:fresh --seed` berhasil.
+- `php artisan test --filter=CloudRetentionCommandTest` berhasil, 4 tests passed dengan 19 assertions.
+- `php artisan cloud:enforce-retention --dry-run` berhasil.
+- `php artisan schedule:list` berhasil dan menampilkan `cloud:enforce-retention` harian pukul 02:15.
+- `php artisan test` berhasil, 65 tests passed dengan 551 assertions.
+
+Catatan:
+- Implementasi tidak menghapus row session dari database; status session berubah menjadi `deleted` dan file asset dihapus. Metadata minimal tetap ada untuk audit dan troubleshooting.
+
+## 2026-05-25 - Admin Stations Sidebar Layout
+Perubahan:
+- Menyesuaikan halaman `/admin/stations` agar memakai shell admin yang sama dengan halaman Customers/Templates.
+- Menambahkan sidebar desktop, header mobile, bottom navigation mobile, dan active state menu Stations.
+- Form tambah station dan tabel token tetap dipertahankan, tetapi sekarang berada di area konten admin dengan spacing/layout yang konsisten.
+
+File utama:
+- `resources/js/Pages/Admin/Stations/Index.vue`
+- `PROGRESS.md`
+
+Verifikasi:
+- `npm run build` berhasil.
+- `php artisan test --filter=AdminAuthAndStationTokenTest` berhasil, 23 tests passed dengan 264 assertions.
+
 ## 2026-05-25 - Seeder Bootstrap Only
 Perubahan:
 - Menyederhanakan `DatabaseSeeder` agar hanya membuat tenant, akun admin, dan station/token awal.

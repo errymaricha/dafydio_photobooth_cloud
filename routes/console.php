@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('queue:work --stop-when-empty --tries=3 --timeout=60')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('cloud:enforce-retention')
+    ->dailyAt('02:15')
+    ->withoutOverlapping();

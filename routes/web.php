@@ -39,6 +39,7 @@ Route::middleware('guest')->group(function (): void {
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', AdminDashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
+    Route::patch('/password', [AuthController::class, 'updatePassword'])->name('password.update');
     Route::get('/stations', [AdminStationController::class, 'index'])->name('stations.index');
     Route::post('/stations', [AdminStationController::class, 'store'])->name('stations.store');
     Route::post('/stations/{station}/token', [AdminStationController::class, 'regenerateToken'])->name('stations.token');

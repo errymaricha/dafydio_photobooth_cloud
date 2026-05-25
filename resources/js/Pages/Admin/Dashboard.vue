@@ -1,5 +1,5 @@
 <script setup>
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -30,9 +30,25 @@ const props = defineProps({
 });
 
 const logoutForm = useForm({});
+const passwordForm = useForm({
+    current_password: '',
+    password: '',
+    password_confirmation: '',
+});
+const page = usePage();
+const flash = computed(() => page.props.flash || {});
 
 const logout = () => {
     logoutForm.post('/admin/logout');
+};
+
+const updatePassword = () => {
+    passwordForm.patch('/admin/password', {
+        preserveScroll: true,
+        onSuccess: () => {
+            passwordForm.reset();
+        },
+    });
 };
 
 const todayLabel = new Intl.DateTimeFormat('id-ID', {
@@ -349,6 +365,38 @@ const bottomItems = [
                         <span>Storage disk active: {{ storage.default_disk || 'public' }}.</span>
                     </div>
                 </div>
+            </section>
+
+            <section id="settings" class="mt-5 rounded-xl border border-[#c3c6d7] bg-white p-5 shadow-sm lg:p-6">
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold">Settings</h2>
+                    <p class="mt-1 text-sm leading-6 text-[#434655]">Ubah password akun admin tenant.</p>
+                </div>
+
+                <p v-if="flash.message" class="mb-4 rounded-lg border border-[#dbe1ff] bg-[#eeefff] p-3 text-sm font-semibold text-[#003ea8]">{{ flash.message }}</p>
+
+                <form class="grid gap-4 lg:max-w-xl" @submit.prevent="updatePassword">
+                    <label class="block">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-[#737686]">Password Lama</span>
+                        <input v-model="passwordForm.current_password" class="mt-2 min-h-11 w-full rounded-lg border border-[#c3c6d7] bg-white px-3 text-sm outline-none focus:border-[#004ac6]" type="password" autocomplete="current-password">
+                        <p v-if="passwordForm.errors.current_password" class="mt-1 text-xs font-semibold text-red-600">{{ passwordForm.errors.current_password }}</p>
+                    </label>
+
+                    <label class="block">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-[#737686]">Password Baru</span>
+                        <input v-model="passwordForm.password" class="mt-2 min-h-11 w-full rounded-lg border border-[#c3c6d7] bg-white px-3 text-sm outline-none focus:border-[#004ac6]" type="password" autocomplete="new-password">
+                        <p v-if="passwordForm.errors.password" class="mt-1 text-xs font-semibold text-red-600">{{ passwordForm.errors.password }}</p>
+                    </label>
+
+                    <label class="block">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-[#737686]">Konfirmasi Password Baru</span>
+                        <input v-model="passwordForm.password_confirmation" class="mt-2 min-h-11 w-full rounded-lg border border-[#c3c6d7] bg-white px-3 text-sm outline-none focus:border-[#004ac6]" type="password" autocomplete="new-password">
+                    </label>
+
+                    <button class="min-h-11 rounded-lg bg-[#004ac6] px-4 text-sm font-semibold text-white shadow-sm disabled:opacity-60 lg:w-fit" type="submit" :disabled="passwordForm.processing">
+                        {{ passwordForm.processing ? 'Menyimpan...' : 'Update Password' }}
+                    </button>
+                </form>
             </section>
         </section>
 
