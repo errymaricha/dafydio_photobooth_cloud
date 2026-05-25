@@ -11,6 +11,20 @@ Dokumen ini adalah catatan status kerja. Setiap perubahan penting harus ditambah
 - Cloud tetap hanya menjadi arsip, portal, marketplace, billing, editor, dan print request coordinator.
 - Station tetap menjadi executor capture dan physical printing.
 
+## 2026-05-25 - Hostinger Root .htaccess Hardening
+Perubahan:
+- Menambahkan root `.htaccess` untuk deployment Hostinger saat project Laravel berada langsung di `public_html`.
+- Memblokir akses browser ke hidden files seperti `.env`, source directory Laravel, folder log/framework storage, `vendor`, `database`, `routes`, dan file project sensitif.
+- Tetap mengizinkan asset publik yang memang harus bisa diakses seperti `/build` dan `/images`.
+- Rewrite tetap mengarahkan route aplikasi ke `index.php` dan mempertahankan header Authorization untuk Sanctum/station API.
+
+File utama:
+- `.htaccess`
+- `PROGRESS.md`
+
+Verifikasi:
+- Perubahan berupa konfigurasi Apache/Hostinger, belum diverifikasi lewat server lokal.
+
 ## 2026-05-22 - Customer Print Flow Redesign
 Perubahan:
 - Meredesain dashboard customer agar proses cetak lebih mudah dipahami dengan label tab mobile `Foto`, `Cetak`, `Template`, dan `Editor`.

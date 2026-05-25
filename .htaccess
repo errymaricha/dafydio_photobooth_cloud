@@ -1,0 +1,42 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Block direct access to hidden files except ACME/Let's Encrypt challenges.
+    RewriteCond %{REQUEST_URI} !^/\.well-known/ [NC]
+    RewriteRule (^|/)\. - [F,L]
+
+    # Block Laravel/source directories when the project is deployed directly in public_html.
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage/framework|storage/logs|tests|vendor)(/|$) - [F,L,NC]
+
+    # Block sensitive project files from browser access.
+    RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js|README\.md|PROGRESS\.md|ARCHITECTURE\.md|API_CONTRACT\.md|DATA_MODEL\.md)$ - [F,L,NC]
+
+    # Preserve auth headers for Sanctum/station APIs.
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Preserve XSRF header.
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Redirect trailing slashes if not a real folder.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Serve existing public files from root first, such as /build and /images.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Send application routes to Laravel front controller.
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<FilesMatch "^(\.env|\.env\..*|\.git.*|\.htaccess|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml)$">
+    Require all denied
+</FilesMatch>
