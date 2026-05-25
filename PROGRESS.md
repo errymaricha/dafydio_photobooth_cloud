@@ -11,6 +11,22 @@ Dokumen ini adalah catatan status kerja. Setiap perubahan penting harus ditambah
 - Cloud tetap hanya menjadi arsip, portal, marketplace, billing, editor, dan print request coordinator.
 - Station tetap menjadi executor capture dan physical printing.
 
+## 2026-05-25 - Seeder Bootstrap Only
+Perubahan:
+- Menyederhanakan `DatabaseSeeder` agar hanya membuat tenant, akun admin, dan station/token awal.
+- Menghapus seed data demo customer, subscription, session, asset, print request, dan sync log dari seeder utama.
+- Menambahkan konfigurasi seed lewat `.env.example`: `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_STATION_CODE`, `SEED_STATION_TOKEN`, dan identitas tenant/station.
+- Seeder tetap idempotent memakai `firstOrCreate`, dan melengkapi `api_token_hash`/`api_token_lookup` jika station lama belum punya token lookup.
+
+File utama:
+- `database/seeders/DatabaseSeeder.php`
+- `.env.example`
+- `PROGRESS.md`
+
+Verifikasi:
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan migrate:fresh --seed` berhasil.
+
 ## 2026-05-25 - Admin Create Station Action
 Perubahan:
 - Menambahkan action admin `POST /admin/stations` untuk membuat station baru dari dashboard tenant.
