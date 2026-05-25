@@ -40,6 +40,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function (): v
     Route::get('/', AdminDashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
     Route::get('/stations', [AdminStationController::class, 'index'])->name('stations.index');
+    Route::post('/stations', [AdminStationController::class, 'store'])->name('stations.store');
     Route::post('/stations/{station}/token', [AdminStationController::class, 'regenerateToken'])->name('stations.token');
     Route::get('/customers', [AdminCustomerController::class, 'index'])->name('customers.index');
     Route::patch('/customers/{customer}', [AdminCustomerController::class, 'update'])->name('customers.update');

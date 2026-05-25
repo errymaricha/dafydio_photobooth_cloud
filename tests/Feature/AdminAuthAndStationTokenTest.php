@@ -92,6 +92,56 @@ class AdminAuthAndStationTokenTest extends TestCase
         $this->assertNotNull($station->refresh()->api_token_hash);
     }
 
+    public function test_tenant_admin_can_create_station_with_initial_token(): void
+    {
+        [$user, $tenant] = $this->createTenantAdmin();
+
+        $this->actingAs($user)
+            ->post('/admin/stations', [
+                'name' => 'Booth Wedding',
+                'code' => 'st-wedding-01',
+                'device_identifier' => 'android-device-01',
+                'status' => 'active',
+                'generate_token' => true,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('message', 'Station berhasil ditambahkan.')
+            ->assertSessionHas('station_token.token');
+
+        $station = Station::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('code', 'ST-WEDDING-01')
+            ->firstOrFail();
+
+        $this->assertSame('Booth Wedding', $station->name);
+        $this->assertSame('android-device-01', $station->device_identifier);
+        $this->assertNotNull($station->api_token_hash);
+        $this->assertNotNull($station->api_token_lookup);
+    }
+
+    public function test_tenant_admin_cannot_create_duplicate_station_code_in_same_tenant(): void
+    {
+        [$user, $tenant] = $this->createTenantAdmin();
+
+        Station::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Existing Station',
+            'code' => 'ST-001',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($user)
+            ->from('/admin/stations')
+            ->post('/admin/stations', [
+                'name' => 'Duplicate Station',
+                'code' => 'ST-001',
+                'status' => 'active',
+                'generate_token' => true,
+            ])
+            ->assertRedirect('/admin/stations')
+            ->assertSessionHasErrors('code');
+    }
+
     public function test_tenant_admin_can_view_session_detail_with_customer_and_assets(): void
     {
         [$user, $tenant] = $this->createTenantAdmin();

@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -34,6 +35,54 @@ class StationController extends Controller
                 'has_token' => filled($station->api_token_hash),
             ]),
         ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => [
+                'required',
+                'string',
+                'max:100',
+                'alpha_dash',
+                Rule::unique('stations', 'code')->where('tenant_id', $tenantId),
+            ],
+            'device_identifier' => ['nullable', 'string', 'max:255'],
+            'status' => ['required', Rule::in(['active', 'inactive', 'maintenance'])],
+            'generate_token' => ['sometimes', 'boolean'],
+        ]);
+
+        $token = null;
+        $stationData = [
+            'tenant_id' => $tenantId,
+            'name' => $data['name'],
+            'code' => Str::upper($data['code']),
+            'device_identifier' => $data['device_identifier'] ?? null,
+            'status' => $data['status'],
+        ];
+
+        if ($request->boolean('generate_token', true)) {
+            $token = 'st_'.$stationData['code'].'_'.Str::random(40);
+            $stationData['api_token_hash'] = Hash::make($token);
+            $stationData['api_token_lookup'] = StationToken::lookupHash($token);
+        }
+
+        $station = Station::query()->create($stationData);
+
+        $response = back()->with('message', 'Station berhasil ditambahkan.');
+
+        if ($token) {
+            $response->with('station_token', [
+                'station_id' => $station->id,
+                'station_code' => $station->code,
+                'token' => $token,
+            ]);
+        }
+
+        return $response;
     }
 
     public function regenerateToken(Request $request, Station $station): RedirectResponse

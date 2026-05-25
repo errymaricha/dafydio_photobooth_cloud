@@ -11,6 +11,28 @@ Dokumen ini adalah catatan status kerja. Setiap perubahan penting harus ditambah
 - Cloud tetap hanya menjadi arsip, portal, marketplace, billing, editor, dan print request coordinator.
 - Station tetap menjadi executor capture dan physical printing.
 
+## 2026-05-25 - Admin Create Station Action
+Perubahan:
+- Menambahkan action admin `POST /admin/stations` untuk membuat station baru dari dashboard tenant.
+- Station baru otomatis tenant-scoped, memvalidasi kode unik per tenant, dan bisa langsung membuat token station awal.
+- Halaman `/admin/stations` sekarang punya form tambah station dengan nama, kode, device ID opsional, status, dan pilihan buat token.
+- Token station awal ditampilkan sekali lewat flash session agar bisa disimpan untuk konfigurasi station.
+- Menambahkan test untuk create station dengan token awal dan validasi kode station duplikat.
+
+File utama:
+- `app/Http/Controllers/Admin/StationController.php`
+- `resources/js/Pages/Admin/Stations/Index.vue`
+- `routes/web.php`
+- `tests/Feature/AdminAuthAndStationTokenTest.php`
+- `PROGRESS.md`
+
+Verifikasi:
+- `vendor\bin\pint --dirty` berhasil.
+- `php artisan test --filter=AdminAuthAndStationTokenTest` berhasil, 23 tests passed dengan 264 assertions.
+- `php artisan route:list --except-vendor --path=admin/stations` berhasil dan route `POST admin/stations` tersedia.
+- `npm run build` berhasil.
+- `php artisan test` berhasil, 61 tests passed dengan 532 assertions.
+
 ## 2026-05-25 - Hostinger Root .htaccess Hardening
 Perubahan:
 - Menambahkan root `.htaccess` untuk deployment Hostinger saat project Laravel berada langsung di `public_html`.
